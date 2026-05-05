@@ -32,11 +32,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-[#dfe4ec] font-[var(--font-family-base)] text-slate-900">
-      <main className="grid min-h-full w-full lg:grid-cols-[1.25fr_1fr]">
+    <div className="login-page fixed inset-0 overflow-hidden bg-[#dfe4ec] font-[var(--font-family-base)] text-slate-900">
+      <main className="grid h-full w-full min-h-0 lg:grid-cols-[1.25fr_1fr]">
         
         {/* MITAD IZQUIERDA (PANEL ROJO) */}
-        <section className="relative hidden overflow-hidden bg-[linear-gradient(135deg,#b33131_0%,#8e2626_50%,#6b1f1f_100%)] text-white lg:flex lg:flex-col lg:min-h-screen">
+        <section className="relative hidden h-full min-h-0 overflow-hidden bg-[linear-gradient(135deg,#b33131_0%,#8e2626_50%,#6b1f1f_100%)] text-white lg:flex lg:flex-col">
           {/* Fondos (Grid y Gradientes) */}
           <div
             className="absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:58px_58px]"
@@ -52,7 +52,7 @@ export default function LoginPage() {
             <div className="flex flex-1 flex-col border-l border-white/20">
               
               {/* Contenido Principal */}
-              <div className="flex flex-1 flex-col justify-center px-[clamp(32px,4vw,64px)] py-12">
+              <div className="flex flex-1 flex-col justify-center px-[clamp(32px,4vw,64px)] py-[clamp(20px,4vh,48px)]">
                 <div className="max-w-[560px]">
                   <p className="m-0 text-[10px] font-medium uppercase tracking-[0.38em] text-white/60">Sistema interno</p>
                   <h1 className="m-0 mt-5 text-[clamp(38px,4.2vw,64px)] font-semibold leading-[0.95] tracking-[-0.04em] text-white">
@@ -66,7 +66,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* 2. LÍNEA VERTICAL CORTA (Para los 3 items) */}
-                <div className="mt-14 max-w-[560px] space-y-8 border-l border-white/60 py-2 pl-6">
+                <div className="login-page__features mt-14 max-w-[560px] space-y-8 border-l border-white/60 py-2 pl-6">
                   <article>
                     <p className="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Operativa</p>
                     <p className="m-0 mt-1.5 text-sm font-normal leading-relaxed text-white/90">Control de artículos, pedidos y recepciones en un flujo claro y eficiente.</p>
@@ -93,12 +93,12 @@ export default function LoginPage() {
         </section>
 
         {/* MITAD DERECHA (FORMULARIO) */}
-        <section className="relative flex min-h-screen w-full items-center justify-center bg-[#dfe4ec] px-6 py-10 lg:min-h-full">
+        <section className="relative flex h-full min-h-0 w-full items-center justify-center bg-[#dfe4ec] px-6 py-[clamp(12px,3vh,28px)]">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="w-full max-w-[480px] rounded-[30px] border border-slate-200 bg-[#fbfcfe] shadow-2xl"
+            className="login-page__card w-full max-w-[480px] rounded-[30px] border border-slate-200 bg-[#fbfcfe] shadow-2xl"
           >
             <div className="border-b border-slate-200 px-[clamp(20px,3.4vw,34px)] py-[clamp(18px,3vh,28px)]">
               <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-[#b33131]">Acceso seguro</p>
@@ -198,7 +198,7 @@ export default function LoginPage() {
                 </motion.button>
 
                 {/* Logo PDSG */}
-                <div className="mt-10 flex flex-col items-center justify-center">
+                <div className="login-page__logo mt-10 flex flex-col items-center justify-center">
                   <img 
                     src="/logo-pdsg.png" 
                     alt="Logo PDSG" 
@@ -207,7 +207,7 @@ export default function LoginPage() {
                 </div>
               </form>
 
-              <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
+              <div className="login-page__signup mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
                 <p className="m-0">
                   ¿Aún no tienes cuenta?{" "}
                   <Link className="font-semibold text-[#b33131] transition-colors hover:text-[#8e2626]" to="/registro">

@@ -207,12 +207,34 @@ a {
       font-size: 12px !important;
       line-height: 1.35 !important;
     }
+
+    .login-page .login-page__card h2 {
+      font-size: 28px !important;
+    }
+
+    .login-page .login-page__logo {
+      margin-top: 18px !important;
+    }
   }
 
   @media (max-height: 700px) {
-    .login-page main {
-      padding-top: 12px !important;
-      padding-bottom: 12px !important;
+    .login-page .login-page__card h2 {
+      font-size: 26px !important;
+    }
+
+    .login-page .login-page__card [class*="py-"] {
+      padding-top: 14px !important;
+      padding-bottom: 14px !important;
+    }
+
+    .login-page .login-page__logo {
+      display: none !important;
+    }
+  }
+
+  @media (max-height: 620px) {
+    .login-page .login-page__signup {
+      display: none !important;
     }
   }
 
