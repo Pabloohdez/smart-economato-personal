@@ -177,6 +177,9 @@ export default function AppLayout() {
         body: "Aquí aparece el contenido del módulo actual. Si hay tablas o filtros, siempre estarán dentro de esta zona.",
         placement: "top",
       },
+    ];
+
+    const inicioOnly: GuidedTourStep[] = [
       {
         id: "perfil",
         selector: "#app-sidebar [aria-label=\"Menú de perfil\"]",
@@ -197,6 +200,7 @@ export default function AppLayout() {
     if (location.pathname === "/inicio") {
       return [
         ...base,
+        ...inicioOnly,
         commonHelp,
         {
           id: "kpis",
