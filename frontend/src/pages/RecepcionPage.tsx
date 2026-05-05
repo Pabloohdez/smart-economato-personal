@@ -581,7 +581,7 @@ export default function Recepcion() {
     <StaggerPage>
       {/* Header */}
       <StaggerItem>
-      <div className="flex items-center justify-between gap-4 mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
+      <div data-tour="recepcion-header" className="flex items-center justify-between gap-4 mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
         <div>
           <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
@@ -620,7 +620,7 @@ export default function Recepcion() {
         <>
 
       <StaggerItem>
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[20px] p-6 shadow-[var(--shadow-sm)] mb-4">
+      <div data-tour="recepcion-bascula" className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[20px] p-6 shadow-[var(--shadow-sm)] mb-4">
         <div className="flex gap-3 items-center flex-wrap justify-between">
           <div className="flex gap-2.5 items-center flex-wrap">
             <strong className="inline-flex items-center gap-2"><Scale className="h-4 w-4 text-[var(--color-brand-500)]" /> Báscula</strong>
@@ -633,6 +633,7 @@ export default function Recepcion() {
             ) : scale.connected ? (
               <button
                 type="button"
+                data-tour="recepcion-bascula-desconectar"
                 className="px-4 py-2 rounded-[12px] font-semibold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] transition inline-flex items-center gap-2"
                 onClick={scale.disconnect}
               >
@@ -641,6 +642,7 @@ export default function Recepcion() {
             ) : (
               <button
                 type="button"
+                data-tour="recepcion-bascula-conectar"
                 className="px-4 py-2 rounded-[12px] font-semibold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] transition inline-flex items-center gap-2"
                 onClick={scale.connect}
               >
@@ -652,6 +654,7 @@ export default function Recepcion() {
           <div className="flex gap-2 items-center flex-wrap">
             <label className="text-[13px] text-[#4a5568]">Kg esperados (opcional):</label>
             <input
+              data-tour="recepcion-kg-esperados"
               type="number"
               step="0.001"
               min="0"
@@ -662,6 +665,7 @@ export default function Recepcion() {
             />
             <button
               type="button"
+              data-tour="recepcion-usar-lectura"
               className="px-4 py-2 rounded-[12px] font-semibold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
               onClick={() => {
                 const kg = scale.captureKg();
@@ -679,7 +683,7 @@ export default function Recepcion() {
 
       {/* Panel búsqueda */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm" ref={buscadorWrapRef}>
+      <div data-tour="recepcion-buscar" className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm" ref={buscadorWrapRef}>
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <PackageSearch className="h-5 w-5 text-[var(--color-brand-500)]" /> Buscar Producto
         </h2>
@@ -702,6 +706,7 @@ export default function Recepcion() {
                   )}
                 <input
                   id="inputRecepcion"
+                  data-tour="recepcion-input"
                   className="relative z-[1] h-12 w-full flex-1 rounded-[18px] border border-gray-300 bg-white px-3 pl-10 text-sm text-gray-900 shadow-sm transition-[border-color,box-shadow] duration-150 box-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   value={term}
                   autoComplete="off"
@@ -780,6 +785,7 @@ export default function Recepcion() {
 
           <div className="grid grid-cols-1 gap-3 min-[1100px]:grid-cols-[minmax(240px,1fr)_minmax(240px,1fr)_auto]">
             <UiSelect
+              data-tour="recepcion-filtro-proveedor"
               value={provFiltro}
               onChange={setProvFiltro}
               placeholder="Todos los proveedores"
@@ -790,6 +796,7 @@ export default function Recepcion() {
             />
 
             <UiSelect
+              data-tour="recepcion-filtro-categoria"
               value={catFiltro}
               onChange={setCatFiltro}
               placeholder="Todas las categorías"
@@ -800,6 +807,7 @@ export default function Recepcion() {
             />
 
             <button
+              data-tour="recepcion-importar-pedido"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90"
               onClick={abrirModalPedidos}
             >
@@ -1267,6 +1275,7 @@ export default function Recepcion() {
       {/* Panel recepción actual */}
       <StaggerItem>
       <BackofficeTablePanel
+        data-tour="recepcion-tabla"
         className="mb-[25px] max-[1024px]:p-0"
         header={
           <div className="flex flex-wrap items-center justify-between gap-3 max-[1024px]:items-start">
@@ -1425,12 +1434,13 @@ export default function Recepcion() {
 
       {/* Observaciones + acciones */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
+      <div data-tour="recepcion-observaciones" className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]">
             <i className="fa-solid fa-note-sticky" /> Observaciones / Notas
           </label>
           <textarea
+            data-tour="recepcion-textarea"
             className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm resize-y transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder="Añade notas sobre esta recepción (opcional)..."
             rows={3}
@@ -1443,6 +1453,7 @@ export default function Recepcion() {
           {!!recepcion.length && (
             <>
               <button
+                data-tour="recepcion-cancelar"
                 className="px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer transition-[transform,background,border-color] duration-200 inline-flex items-center gap-2.5 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:-translate-y-0.5 max-[768px]:w-full max-[768px]:justify-center"
                 onClick={() => setRecepcion([])}
                 type="button"
@@ -1450,6 +1461,7 @@ export default function Recepcion() {
                 <i className="fa-solid fa-xmark" /> Cancelar Recepción
               </button>
               <button
+                data-tour="recepcion-confirmar"
                 className="px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer transition-[transform,box-shadow,background] duration-200 inline-flex items-center gap-2.5 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white shadow-[0_4px_15px_rgba(56,161,105,0.3)] hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,#68d391_0%,#48bb78_100%)] hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] max-[768px]:w-full max-[768px]:justify-center"
                 onClick={confirmarRecepcionManual}
                 type="button"

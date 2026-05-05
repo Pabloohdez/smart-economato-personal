@@ -227,6 +227,75 @@ export default function AppLayout() {
       ];
     }
 
+    if (location.pathname === "/recepcion") {
+      return [
+        ...base,
+        {
+          id: "recep-header",
+          selector: '[data-tour="recepcion-header"]',
+          title: "Objetivo de Recepción",
+          body: "En esta pantalla registras entradas de mercancía y el stock se actualiza automáticamente.",
+          placement: "bottom",
+        },
+        {
+          id: "recep-bascula",
+          selector: '[data-tour="recepcion-bascula"]',
+          title: "Báscula (opcional)",
+          body: "Conecta la báscula para capturar kilos y validar recepciones por peso. Si no la usas, puedes trabajar manualmente.",
+          placement: "bottom",
+        },
+        {
+          id: "recep-kg",
+          selector: '[data-tour="recepcion-kg-esperados"]',
+          title: "Kg esperados",
+          body: "Si indicas un peso esperado, al confirmar se validará contra la lectura actual (tolerancia).",
+          placement: "bottom",
+        },
+        {
+          id: "recep-buscar",
+          selector: '[data-tour="recepcion-buscar"]',
+          title: "Buscar producto",
+          body: "Escribe para buscar por nombre o código. Al pulsar Enter se abrirá el modal de cantidad para añadirlo a la recepción.",
+          placement: "bottom",
+        },
+        {
+          id: "recep-filtros",
+          selector: '[data-tour="recepcion-filtro-proveedor"]',
+          title: "Filtros",
+          body: "Filtra por proveedor o categoría para encontrar productos más rápido.",
+          placement: "bottom",
+        },
+        {
+          id: "recep-importar",
+          selector: '[data-tour="recepcion-importar-pedido"]',
+          title: "Importar/Recibir pedido",
+          body: "Abre el panel de pedidos pendientes para verificar cantidades, lotes y añadir lo recibido a la recepción.",
+          placement: "bottom",
+        },
+        {
+          id: "recep-tabla",
+          selector: '[data-tour="recepcion-tabla"]',
+          title: "Recepción actual",
+          body: "Aquí ves lo que has añadido: stock actual, cantidad recibida y el nuevo stock. También puedes eliminar líneas.",
+          placement: "top",
+        },
+        {
+          id: "recep-notas",
+          selector: '[data-tour="recepcion-observaciones"]',
+          title: "Observaciones y acciones",
+          body: "Añade notas y finalmente confirma para guardar la entrada de stock. También puedes cancelar para vaciar la recepción.",
+          placement: "top",
+        },
+        {
+          id: "recep-confirmar",
+          selector: '[data-tour="recepcion-confirmar"]',
+          title: "Confirmar recepción",
+          body: "Guarda la entrada: se crean movimientos de stock y el inventario queda actualizado.",
+          placement: "top",
+        },
+      ];
+    }
+
     return base;
   }, [location.pathname]);
 
@@ -481,17 +550,6 @@ export default function AppLayout() {
             </div>
           </div>
         </header>
-
-        {/* Botón flotante: tutorial disponible en TODAS las pantallas (incluye móvil) */}
-        <button
-          type="button"
-          onClick={() => setTourOpen(true)}
-          aria-label="Abrir tutorial guiado"
-          className="fixed bottom-5 right-5 z-[80] inline-flex h-[52px] items-center justify-center gap-2 rounded-[18px] border border-[rgba(179,49,49,0.18)] bg-[linear-gradient(135deg,rgba(179,49,49,0.14),rgba(179,49,49,0.08))] px-4 text-[13px] font-extrabold text-[var(--color-brand-600)] shadow-[0_18px_40px_rgba(15,23,42,0.16)] backdrop-blur transition hover:bg-[linear-gradient(135deg,rgba(179,49,49,0.18),rgba(179,49,49,0.12))] max-[520px]:bottom-4 max-[520px]:right-4"
-        >
-          <BookOpen className="h-4 w-4" />
-          Tutorial
-        </button>
 
         <main
           className={[
