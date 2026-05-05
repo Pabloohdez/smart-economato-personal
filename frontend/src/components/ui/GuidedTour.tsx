@@ -58,6 +58,10 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
 
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const rafRef = useRef<number | null>(null);
+  const tipRef = useRef<HTMLDivElement | null>(null);
+  const [tipHeight, setTipHeight] = useState<number>(196);
+  const [targetMissing, setTargetMissing] = useState(false);
+  const missingSinceRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -67,15 +71,20 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
   useEffect(() => {
     if (!open || !step) return;
 
-    const update = () => {
-      const el = getEl(step.selector);
-      if (!el) {
-        setTargetRect(null);
-        return;
-      }
+    const isActuallyVisible = (el: HTMLElement) => {
+      // offsetParent null suele significar display:none (excepto fixed); rect 0,0 también es sospechoso.
+      const rect = el.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return false;
+      const style = window.getComputedStyle(el);
+      if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") return false;
+      return true;
+    };
 
-      // 1) Intentar asegurar que el objetivo está visible (autoscroll).
-      // Usamos "center" para evitar que el tooltip quede fuera de pantalla.
+    const updateTarget = (el: HTMLElement) => {
+      setTargetMissing(false);
+      missingSinceRef.current = null;
+
+      // 1) Autoscroll para que se vea el objetivo.
       try {
         const rectNow = el.getBoundingClientRect();
         if (!isRectMostlyInViewport(rectNow, 28)) {
@@ -89,24 +98,83 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
         // noop
       }
 
-      // 2) Medir después (en el siguiente frame) para que el spotlight quede alineado tras el scroll.
+      // 2) Medir tras el scroll.
       requestAnimationFrame(() => {
-        const rect = el.getBoundingClientRect();
-        setTargetRect(rect);
+        setTargetRect(el.getBoundingClientRect());
       });
     };
 
-    update();
+    const tryResolve = (): boolean => {
+      const el = getEl(step.selector);
+      if (!el || !isActuallyVisible(el)) {
+        setTargetRect(null);
+        setTargetMissing(true);
+        if (missingSinceRef.current == null) missingSinceRef.current = Date.now();
+        return false;
+      }
+      updateTarget(el);
+      return true;
+    };
 
-    const onResize = () => update();
+    // Primer intento inmediato.
+    tryResolve();
+
+    // Reintentos cortos: útil cuando la UI renderiza tarde (transiciones/modales/tab/vistas).
+    let tries = 0;
+    const maxTries = 18;
+    const interval = window.setInterval(() => {
+      tries += 1;
+      const ok = tryResolve();
+      if (ok || tries >= maxTries) window.clearInterval(interval);
+    }, 120);
+
+    // Observer para reintentar cuando cambia el DOM.
+    const obsRoot = (document.querySelector("#main-content") as HTMLElement | null) ?? document.body;
+    const mo = new MutationObserver(() => {
+      // Si ya lo tenemos, no hace falta.
+      if (!targetMissing) return;
+      tryResolve();
+    });
+    try {
+      mo.observe(obsRoot, { childList: true, subtree: true, attributes: true });
+    } catch {
+      // noop
+    }
+
+    const onResize = () => {
+      const el = getEl(step.selector);
+      if (el && isActuallyVisible(el)) updateTarget(el);
+      else tryResolve();
+    };
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onResize, true);
 
     return () => {
+      window.clearInterval(interval);
+      mo.disconnect();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onResize, true);
     };
   }, [open, step?.selector]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const measure = () => {
+      const h = tipRef.current?.getBoundingClientRect().height;
+      if (h && Number.isFinite(h) && h > 0) setTipHeight(h);
+    };
+
+    // Medición inicial y tras cambios de paso
+    measure();
+    const id = window.setTimeout(measure, 0);
+
+    window.addEventListener("resize", measure);
+    return () => {
+      window.clearTimeout(id);
+      window.removeEventListener("resize", measure);
+    };
+  }, [open, idx, step?.id]);
 
   useEffect(() => {
     if (!open) return;
@@ -163,7 +231,7 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
 
   const tooltipMaxW = 440;
   const tooltipW = Math.min(tooltipMaxW, Math.max(320, Math.round(window.innerWidth * 0.34)));
-  const tooltipH = 172;
+  const tooltipH = Math.max(160, tipHeight || 196);
 
   const defaultTop = 90;
   const defaultLeft = Math.round((window.innerWidth - tooltipW) / 2);
@@ -306,7 +374,16 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
 
       <div
         className="absolute rounded-[22px] border border-white/18 bg-white text-slate-900 shadow-[0_30px_80px_rgba(0,0,0,0.55)]"
-        style={{ top: tipTop, left: tipLeft, width: tooltipW }}
+        style={{
+          top: tipTop,
+          left: tipLeft,
+          width: tooltipW,
+          maxHeight: "calc(100dvh - 24px)",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+        }}
+        ref={tipRef}
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-5 py-4">
           <div className="min-w-0">
@@ -327,8 +404,13 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
           </button>
         </div>
 
-        <div className="px-5 py-4 text-[13px] font-semibold leading-relaxed text-slate-700">
+        <div className="px-5 py-4 text-[13px] font-semibold leading-relaxed text-slate-700 overflow-y-auto">
           {step.body}
+          {targetMissing ? (
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-[12px] font-bold text-amber-900">
+              Este elemento no está visible ahora mismo (puede depender de una vista, filtro o modal). Si quieres, pulsa “Siguiente” para saltar este punto.
+            </div>
+          ) : null}
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t border-slate-200 px-5 py-4">
