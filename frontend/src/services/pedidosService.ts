@@ -10,6 +10,11 @@ type PedidosResponse<T> = {
   };
 };
 
+type CreatePedidoResult = {
+  id: number;
+  merged?: boolean;
+};
+
 export async function getPedidos(): Promise<PedidoHistorial[]> {
   const json = await apiFetch<PedidosResponse<PedidoHistorial[]>>("/pedidos", {
     headers: { "X-Requested-With": "XMLHttpRequest" },
@@ -35,7 +40,7 @@ export async function getPedidosPendientes(): Promise<Pedido[]> {
   return pedidos.filter((pedido) => pedido.estado === "PENDIENTE" || pedido.estado === "INCOMPLETO");
 }
 
-export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise<boolean> {
+export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise<CreatePedidoResult> {
   // El backend (Nest + ValidationPipe con forbidNonWhitelisted) solo acepta
   // { proveedorId:number, total?:number, items?:[{producto_id:string,unidad?:string,cantidad:number,precio:number}] }
   // y rechaza propiedades extra (usuarioId, nombre, proveedor_id, etc).
@@ -52,7 +57,7 @@ export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise
       : undefined,
   };
 
-  const json = await apiFetch<PedidosResponse<unknown>>("/pedidos", {
+  const json = await apiFetch<PedidosResponse<CreatePedidoResult> | CreatePedidoResult>("/pedidos", {
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(apiPayload),
@@ -62,7 +67,13 @@ export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise
     },
   });
 
-  return Boolean(json?.success);
+  // Soportar respuestas envueltas y sin envolver
+  if (json && typeof json === "object" && "success" in json) {
+    const env = json as PedidosResponse<CreatePedidoResult>;
+    if (!env.success) throw new Error(env.error?.message || "Error creando pedido");
+    return (env.data ?? { id: -1, merged: false }) as CreatePedidoResult;
+  }
+  return json as CreatePedidoResult;
 }
 
 export async function recibirPedido(

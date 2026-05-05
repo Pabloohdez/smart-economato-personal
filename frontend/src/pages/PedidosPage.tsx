@@ -165,25 +165,29 @@ export default function PedidosPage() {
     ) => {
       let exitos = 0;
       let errores = 0;
+      let creados = 0;
+      let añadidos = 0;
 
       for (const pid of Object.keys(pedidosPorProveedor)) {
         const pedidoData = pedidosPorProveedor[pid];
 
-        const ok = await crearPedidoHistorial({
-          proveedorId: pedidoData.proveedorId,
-          items: pedidoData.items,
-          usuarioId: "1",
-          total: pedidoData.total,
-        });
+        try {
+          const result = await crearPedidoHistorial({
+            proveedorId: pedidoData.proveedorId,
+            items: pedidoData.items,
+            usuarioId: "1",
+            total: pedidoData.total,
+          });
 
-        if (ok) {
           exitos++;
-        } else {
+          if (result?.merged) añadidos++;
+          else creados++;
+        } catch {
           errores++;
         }
       }
 
-      return { exitos, errores };
+      return { exitos, errores, creados, añadidos };
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.pedidos });
@@ -431,15 +435,21 @@ export default function PedidosPage() {
     if (!confirmado) return;
 
     try {
-      const { exitos, errores } = await guardarPedidosMutation.mutateAsync(pedidosPorProveedor);
+      const { exitos, errores, creados, añadidos } = await guardarPedidosMutation.mutateAsync(pedidosPorProveedor);
 
       if (exitos > 0 && errores === 0) {
-        showNotification(`Se han creado ${exitos} pedido(s) correctamente.`, "success");
+        if (añadidos > 0 && creados > 0) {
+          showNotification(`Se han creado nuevos pedidos o añadido a existentes. (Nuevos: ${creados}, Añadidos: ${añadidos})`, "success");
+        } else if (añadidos > 0) {
+          showNotification(`Se han creado nuevos pedidos o añadido a existentes. (Añadidos: ${añadidos})`, "success");
+        } else {
+          showNotification(`Se han creado nuevos pedidos o añadido a existentes. (Nuevos: ${creados})`, "success");
+        }
         setItemsPedido([]);
         setProveedorId("");
         setVista("lista");
       } else if (exitos > 0 && errores > 0) {
-        showNotification(`Proceso terminado con advertencias. Creados: ${exitos}, Fallidos: ${errores}`, "warning");
+        showNotification(`Proceso terminado con advertencias. Creados/Añadidos: ${exitos}, Fallidos: ${errores}`, "warning");
         setVista("lista");
       } else {
         showNotification("No se pudo crear ningún pedido.", "error");
@@ -570,9 +580,15 @@ export default function PedidosPage() {
         return;
       }
 
-      const { exitos, errores } = await guardarPedidosMutation.mutateAsync(pedidosPorProveedor);
+      const { exitos, errores, creados, añadidos } = await guardarPedidosMutation.mutateAsync(pedidosPorProveedor);
       if (exitos > 0 && errores === 0) {
-        showNotification(`Importación completada: ${exitos} pedido(s).`, "success");
+        if (añadidos > 0 && creados > 0) {
+          showNotification(`Importación completada: se han creado nuevos pedidos o añadido a existentes. (Nuevos: ${creados}, Añadidos: ${añadidos})`, "success");
+        } else if (añadidos > 0) {
+          showNotification(`Importación completada: se han creado nuevos pedidos o añadido a existentes. (Añadidos: ${añadidos})`, "success");
+        } else {
+          showNotification(`Importación completada: se han creado nuevos pedidos o añadido a existentes. (Nuevos: ${creados})`, "success");
+        }
       } else if (exitos > 0) {
         showNotification(`Importación parcial: ${exitos} creados, ${errores} fallidos.`, "warning");
       } else {
