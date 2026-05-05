@@ -288,7 +288,7 @@ export default function AuditoriaPage() {
 
   return (
     <StaggerPage className="w-full">
-      <StaggerItem className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
+      <StaggerItem className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]" data-tour="auditoria-header">
         <h1 className="text-[28px] font-bold text-primary m-0 mb-2 flex items-center gap-3">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm"><ClipboardList className="h-5 w-5" /></span> Registro de Auditoría
         </h1>
@@ -297,7 +297,7 @@ export default function AuditoriaPage() {
         </p>
       </StaggerItem>
 
-      <StaggerItem className="mb-6 rounded-[30px] border border-slate-200/90 bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+      <StaggerItem className="mb-6 rounded-[30px] border border-slate-200/90 bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="auditoria-filtros">
         <div className="flex flex-wrap gap-5 items-end">
           <div className="flex flex-col gap-2 flex-1 min-w-[220px] max-[768px]:min-w-0 max-[768px]:w-full">
             <label htmlFor="filtroAccion" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
@@ -395,6 +395,7 @@ export default function AuditoriaPage() {
         )}
         {!loading && !errorMsg && (
           <BackofficeTablePanel
+            data-tour="auditoria-tabla"
             header={
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2.5">

@@ -371,7 +371,7 @@ export default function ConfiguracionPage() {
 
   return (
     <StaggerPage>
-      <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]">
+      <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]" data-tour="configuracion-header">
         <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
             <i className="fa-solid fa-gear" />
@@ -387,6 +387,7 @@ export default function ConfiguracionPage() {
         className="flex gap-2.5 mb-[30px] border-b-2 border-[var(--color-border-default)] pb-2.5 max-[768px]:flex-col"
         role="tablist"
         aria-label="Secciones de configuración"
+        data-tour="configuracion-tabs"
       >
         <button
           className={[
@@ -438,7 +439,7 @@ export default function ConfiguracionPage() {
       </StaggerItem>
 
       {tabActiva === "perfil" && (
-        <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+        <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="configuracion-body">
           <h2 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
             <i className="fa-solid fa-id-card" /> Información Personal
           </h2>
@@ -544,7 +545,7 @@ export default function ConfiguracionPage() {
 
       {tabActiva === "alergias" && (
         <>
-          <StaggerItem className="bg-[linear-gradient(135deg,#fff5f5_0%,#fed7d7_100%)] border-l-4 border-l-[#c53030] p-5 rounded-[10px] flex items-start gap-[15px] mb-[30px]">
+          <StaggerItem className="bg-[linear-gradient(135deg,#fff5f5_0%,#fed7d7_100%)] border-l-4 border-l-[#c53030] p-5 rounded-[10px] flex items-start gap-[15px] mb-[30px]" data-tour="configuracion-body">
             <i className="fa-solid fa-shield-halved text-[24px] text-[#c53030] mt-0.5" />
             <div>
               <strong className="block text-[16px] text-[#742a2a] mb-1">
@@ -557,7 +558,7 @@ export default function ConfiguracionPage() {
             </div>
           </StaggerItem>
 
-          <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+          <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="configuracion-body">
             <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
               <i className="fa-solid fa-triangle-exclamation" /> Mis Alergias Registradas
             </h3>
@@ -649,7 +650,7 @@ export default function ConfiguracionPage() {
       )}
 
       {tabActiva === "notificaciones" && (
-        <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+        <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="configuracion-body">
           <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
             <i className="fa-solid fa-bell" /> Preferencias de Alertas
           </h3>

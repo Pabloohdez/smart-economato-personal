@@ -420,7 +420,10 @@ export default function DistribucionPage() {
   return (
     <StaggerPage>
       <StaggerItem>
-        <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
+        <div
+          className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch"
+          data-tour="distribucion-header"
+        >
           <div>
             <h2 className="m-0 text-[28px] font-bold text-primary flex items-center gap-3">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
@@ -455,7 +458,10 @@ export default function DistribucionPage() {
       )}
 
       <StaggerItem>
-        <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[20px] p-6 shadow-[var(--shadow-sm)] mb-4">
+        <div
+          className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[20px] p-6 shadow-[var(--shadow-sm)] mb-4"
+          data-tour="distribucion-bascula"
+        >
           <div className="flex gap-3 items-center flex-wrap justify-between">
             <div className="flex gap-2.5 items-center flex-wrap">
               <strong>Báscula</strong>
@@ -492,7 +498,11 @@ export default function DistribucionPage() {
       <StaggerItem>
         <div className="grid grid-cols-2 gap-[25px] mt-6 max-[768px]:grid-cols-1">
         {/* Panel Izq */}
-        <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col" ref={buscadorWrapRef}>
+        <div
+          className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col"
+          ref={buscadorWrapRef}
+          data-tour="distribucion-buscar"
+        >
           <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 pb-[15px] border-b-2 border-[var(--color-border-default)] flex items-center gap-2.5">
             <PackageSearch className="h-5 w-5 text-[var(--color-brand-500)]" /> Buscar Producto
           </h3>
@@ -684,6 +694,7 @@ export default function DistribucionPage() {
         {/* Panel Der */}
         <BackofficeTablePanel
           className="min-h-[500px]"
+          data-tour="distribucion-carrito"
           header={
             <div className="flex items-center justify-between gap-3">
               <h3 className="m-0 text-[18px] font-semibold text-[var(--color-text-strong)]">Lista de Salida</h3>
@@ -712,7 +723,7 @@ export default function DistribucionPage() {
               />
             </div>
 
-            <Button className="w-full mt-3.5" variant="success" type="button" onClick={confirmarSalida}>
+            <Button className="w-full mt-3.5" variant="success" type="button" onClick={confirmarSalida} data-tour="distribucion-confirmar">
               <Check className="h-4 w-4" /> Confirmar Salida
             </Button>
             </div>
@@ -761,6 +772,7 @@ export default function DistribucionPage() {
       {/* Historial */}
       <BackofficeTablePanel
         className="mt-5"
+        data-tour="distribucion-historial"
         header={
           <div className="flex items-center justify-between gap-3">
             <h3 className="m-0 flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">

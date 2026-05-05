@@ -240,7 +240,10 @@ export default function InventarioPage() {
   return (
     <StaggerPage>
       <StaggerItem>
-        <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
+        <div
+          className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch"
+          data-tour="inventario-header"
+        >
           <div>
             <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
@@ -257,27 +260,29 @@ export default function InventarioPage() {
       </StaggerItem>
 
       <StaggerItem>
-        <InventarioToolbar
-          q={q}
-          setQ={setQ}
-          cats={cats as any}
-          catId={catId}
-          setCatId={setCatId}
-          provs={provs as any}
-          provId={provId}
-          setProvId={setProvId}
-          orden={orden}
-          setOrden={setOrden}
-          onlyStockBajo={onlyStockBajo}
-          setOnlyStockBajo={setOnlyStockBajo}
-          onlyProximoCaducar={onlyProximoCaducar}
-          setOnlyProximoCaducar={setOnlyProximoCaducar}
-          onExportCsv={exportarProductosCsv}
-          onExportXlsx={exportarProductosXlsx}
-          onCreateProduct={() => nav("/inventario/nuevo")}
-          limpiarFiltros={limpiarFiltros}
-          totalItems={filtered.length}
-        />
+        <div data-tour="inventario-toolbar">
+          <InventarioToolbar
+            q={q}
+            setQ={setQ}
+            cats={cats as any}
+            catId={catId}
+            setCatId={setCatId}
+            provs={provs as any}
+            provId={provId}
+            setProvId={setProvId}
+            orden={orden}
+            setOrden={setOrden}
+            onlyStockBajo={onlyStockBajo}
+            setOnlyStockBajo={setOnlyStockBajo}
+            onlyProximoCaducar={onlyProximoCaducar}
+            setOnlyProximoCaducar={setOnlyProximoCaducar}
+            onExportCsv={exportarProductosCsv}
+            onExportXlsx={exportarProductosXlsx}
+            onCreateProduct={() => nav("/inventario/nuevo")}
+            limpiarFiltros={limpiarFiltros}
+            totalItems={filtered.length}
+          />
+        </div>
       </StaggerItem>
 
       {loading && (
@@ -330,7 +335,9 @@ export default function InventarioPage() {
 
       {!loading && !productosError && (
         <StaggerItem>
-          <InventarioTable items={filtered} lotes={lotesQuery.data ?? []} />
+          <div data-tour="inventario-table">
+            <InventarioTable items={filtered} lotes={lotesQuery.data ?? []} />
+          </div>
         </StaggerItem>
       )}
     </StaggerPage>

@@ -355,7 +355,7 @@ export default function EscandallosPage() {
 
   return (
     <StaggerPage className="w-full mb-8">
-      <StaggerItem className="mb-6 w-full">
+      <StaggerItem className="mb-6 w-full" data-tour="escandallos-header">
         <h1 className="m-0 mb-6 flex items-center gap-3 text-[28px] font-extrabold text-[var(--color-brand-500)]">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
             <ReceiptText className="h-5 w-5" />
@@ -363,7 +363,10 @@ export default function EscandallosPage() {
           Escandallos y Recetas
         </h1>
 
-        <div className="mb-7 flex items-end gap-4 rounded-[30px] border border-slate-200/90 bg-white px-[25px] py-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)] flex-wrap max-[768px]:flex-col max-[768px]:items-stretch">
+        <div
+          className="mb-7 flex items-end gap-4 rounded-[30px] border border-slate-200/90 bg-white px-[25px] py-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)] flex-wrap max-[768px]:flex-col max-[768px]:items-stretch"
+          data-tour="escandallos-toolbar"
+        >
           <div className="flex flex-col gap-1.5 min-w-[200px] flex-grow">
             <label htmlFor="busquedaEscandallos" className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
               Buscar Receta
@@ -403,6 +406,7 @@ export default function EscandallosPage() {
 
       <StaggerItem>
         <BackofficeTablePanel
+          data-tour="escandallos-table"
           header={
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="m-0 text-[18px] font-semibold text-[var(--color-text-strong)]">Listado de Recetas</h3>

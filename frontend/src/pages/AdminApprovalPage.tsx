@@ -190,7 +190,7 @@ export default function AdminApprovalPage() {
   return (
     <StaggerPage>
         {/* ── Header ─────────────────────────────────────────────── */}
-        <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]">
+        <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]" data-tour="solicitudes-header">
           <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
               <Shield className="h-5 w-5" />
@@ -232,7 +232,7 @@ export default function AdminApprovalPage() {
                 </div>
               </StaggerItem>
             ) : (
-              <div className="grid gap-3">
+              <div className="grid gap-3" data-tour="solicitudes-altas">
                 {accountRequests.map((user, index) => {
                   const userId = String(user.id);
                   const selectedRole = roleByUser[userId] ?? "alumno";
@@ -331,7 +331,7 @@ export default function AdminApprovalPage() {
                 </div>
               </StaggerItem>
             ) : (
-              <div className="grid gap-3">
+              <div className="grid gap-3" data-tour="solicitudes-password">
                 {passwordRequests.map((request, index) => {
                   const tokenId = String(request.token_id ?? "");
                   const nextPassword = passwordByToken[tokenId] ?? "";

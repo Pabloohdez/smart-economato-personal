@@ -542,7 +542,10 @@ export default function BajasPage() {
     <StaggerPage>
       {/* HEADER */}
       <StaggerItem>
-      <div className="flex justify-between items-center mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-4">
+      <div
+        className="flex justify-between items-center mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-4"
+        data-tour="bajas-header"
+      >
         <div>
           <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
@@ -575,7 +578,10 @@ export default function BajasPage() {
 
       {/* STATS */}
       <StaggerItem>
-      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-[30px] max-[768px]:grid-cols-1">
+      <div
+        className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-[30px] max-[768px]:grid-cols-1"
+        data-tour="bajas-stats"
+      >
         <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#e53e3e]">
             <Wrench className="h-5 w-5" />
@@ -628,7 +634,10 @@ export default function BajasPage() {
 
       {/* PANEL REGISTRO */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-slate-300 bg-white p-[25px] shadow-[0_16px_36px_rgba(15,23,42,0.08)]">
+      <div
+        className="mb-[25px] rounded-xl border border-slate-300 bg-white p-[25px] shadow-[0_16px_36px_rgba(15,23,42,0.08)]"
+        data-tour="bajas-registro"
+      >
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <ClipboardList className="h-5 w-5 text-[var(--color-brand-500)]" /> Registrar Nueva Baja
         </h2>
@@ -723,6 +732,7 @@ export default function BajasPage() {
       {/* BAJA ACTIVA */}
       <StaggerItem className="mb-6">
       <BackofficeTablePanel
+        data-tour="bajas-actual"
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -888,7 +898,10 @@ export default function BajasPage() {
 
       {/* ACCIONES */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-[24px] border border-[var(--color-border-default)] bg-white p-[25px] shadow-[var(--shadow-sm)]">
+      <div
+        className="mb-[25px] rounded-[24px] border border-[var(--color-border-default)] bg-white p-[25px] shadow-[var(--shadow-sm)]"
+        data-tour="bajas-acciones"
+      >
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]" htmlFor="textareaMotivoBaja">
             <Mail className="h-4 w-4" /> Motivo / Descripción Detallada
@@ -964,6 +977,7 @@ export default function BajasPage() {
       {/* HISTORIAL */}
       <StaggerItem>
       <BackofficeTablePanel
+        data-tour="bajas-historial"
         header={
           <div className="flex justify-between items-start gap-3 max-[1024px]:flex-col max-[1024px]:items-stretch">
             <div>

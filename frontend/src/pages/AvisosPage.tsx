@@ -467,7 +467,7 @@ export default function AvisosPage() {
 
   return (
     <StaggerPage>
-      <StaggerItem className="flex justify-between items-start mb-6 gap-4 flex-wrap">
+      <StaggerItem className="flex justify-between items-start mb-6 gap-4 flex-wrap" data-tour="avisos-header">
         <div>
           <h1 className="m-0 mb-1 flex items-center gap-3 text-[28px] font-semibold text-primary">
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
@@ -487,7 +487,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-8">
+      <StaggerItem className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-8" data-tour="avisos-kpis">
         <div className="bg-[var(--color-bg-surface)] border border-[#d1d5db] rounded-[10px] p-5 flex items-center gap-4 shadow-[0_14px_28px_rgba(15,23,42,0.14)] transition-[transform,box-shadow] duration-200 hover:shadow-[0_18px_34px_rgba(15,23,42,0.2)] hover:-translate-y-0.5">
           <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#fef3c7] text-[#d97706]">
             <i className="fa-solid fa-triangle-exclamation"></i>
@@ -519,7 +519,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/90 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+      <StaggerItem className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/90 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="avisos-caducados">
         <div className="px-5 py-4 border-l-4 border-l-[#dc2626] flex justify-between items-center bg-[linear-gradient(90deg,#fef2f2_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-calendar-xmark text-[16px] text-[#6b7280]"></i>
@@ -576,7 +576,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/90 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+      <StaggerItem className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/90 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="avisos-stockbajo">
         <div className="px-5 py-4 border-l-4 border-l-[#f59e0b] flex justify-between items-center bg-[linear-gradient(90deg,#fffbeb_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-box-open text-[16px] text-[#6b7280]"></i>
@@ -647,7 +647,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="mb-6">
+      <StaggerItem className="mb-6" data-tour="avisos-financiero">
         <BackofficeTablePanel
           header={
             <div className="flex flex-wrap items-center justify-between gap-3">

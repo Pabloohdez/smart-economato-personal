@@ -542,6 +542,7 @@ export default function RendimientoPage() {
       <StaggerItem
         className="flex justify-between items-start mb-[25px] flex-wrap gap-4 max-[768px]:flex-col"
         data-print-date={new Date().toLocaleString("es-ES")}
+        data-tour="rendimiento-header"
       >
         <div>
           <h1 className="text-[1.8rem] font-extrabold text-primary m-0 mb-1 flex items-center gap-3 max-[768px]:text-[1.4rem]">
@@ -602,7 +603,7 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
+      <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1" data-tour="rendimiento-kpis">
         <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#ebf8ff] text-[#3182ce]">
             <i className="fa-solid fa-carrot"></i>
@@ -651,7 +652,7 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="mb-[25px] w-full box-border rounded-[30px] border border-slate-200/90 bg-white p-[25px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+      <StaggerItem className="mb-[25px] w-full box-border rounded-[30px] border border-slate-200/90 bg-white p-[25px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="rendimiento-busqueda">
         <div className="flex justify-between items-center gap-5 max-[768px]:flex-col max-[768px]:items-stretch">
           <div className="flex gap-4 flex-1 items-center max-[768px]:flex-col max-[768px]:items-stretch">
             <SearchInput
@@ -723,7 +724,7 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="mb-6">
+      <StaggerItem className="mb-6" data-tour="rendimiento-actual">
         <BackofficeTablePanel
           header={
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -924,7 +925,7 @@ export default function RendimientoPage() {
         </BackofficeTablePanel>
       </StaggerItem>
 
-      <StaggerItem className="mb-[25px] w-full box-border rounded-[30px] border border-slate-200/90 bg-white p-[25px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+      <StaggerItem className="mb-[25px] w-full box-border rounded-[30px] border border-slate-200/90 bg-white p-[25px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]" data-tour="rendimiento-acciones">
         <div>
           <label
             className="font-semibold text-[var(--color-text-muted)] flex items-center gap-2 mb-2"
@@ -986,7 +987,7 @@ export default function RendimientoPage() {
         document.body
       )}
 
-      <StaggerItem>
+      <StaggerItem data-tour="rendimiento-historial">
         <BackofficeTablePanel
           header={
             <div className="flex flex-wrap items-center justify-between gap-4">

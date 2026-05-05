@@ -52,13 +52,6 @@ const navItems = [
   { to: "/rendimiento", label: "Rendimiento", icon: ChartPie, roles: ["administrador", "profesor", "alumno"] },
   { to: "/avisos", label: "Avisos", icon: BellRing, roles: ["administrador", "profesor", "alumno"] },
   {
-    to: "/tutorial",
-    label: "Guía de uso",
-    icon: BookOpen,
-    separated: true,
-    roles: ["administrador", "profesor", "alumno"],
-  },
-  {
     to: "/solicitudes-aprobacion",
     label: "Solicitudes",
     icon: CheckCircle2,
@@ -193,9 +186,18 @@ export default function AppLayout() {
       },
     ];
 
+    const commonHelp: GuidedTourStep = {
+      id: "tutorial-btn",
+      selector: '[data-tour="tutorial-button"]',
+      title: "Tutorial guiado",
+      body: "Pulsa aquí cuando quieras ver una guía paso a paso de la pantalla actual (funciones, botones y flujo recomendado).",
+      placement: "left",
+    };
+
     if (location.pathname === "/inicio") {
       return [
         ...base,
+        commonHelp,
         {
           id: "kpis",
           selector: '[data-tour="inicio-kpis"]',
@@ -230,6 +232,7 @@ export default function AppLayout() {
     if (location.pathname === "/recepcion") {
       return [
         ...base,
+        commonHelp,
         {
           id: "recep-header",
           selector: '[data-tour="recepcion-header"]',
@@ -291,6 +294,405 @@ export default function AppLayout() {
           selector: '[data-tour="recepcion-confirmar"]',
           title: "Confirmar recepción",
           body: "Guarda la entrada: se crean movimientos de stock y el inventario queda actualizado.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/distribucion") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "dist-header",
+          selector: '[data-tour="distribucion-header"]',
+          title: "Distribución / salida de stock",
+          body: "Aquí registras salidas de productos hacia cocina, bar u otros destinos. El stock baja automáticamente.",
+          placement: "bottom",
+        },
+        {
+          id: "dist-bascula",
+          selector: '[data-tour="distribucion-bascula"]',
+          title: "Báscula (opcional)",
+          body: "Si trabajas por peso (kg/l), puedes conectar la báscula para capturar cantidades con precisión.",
+          placement: "bottom",
+        },
+        {
+          id: "dist-buscar",
+          selector: '[data-tour="distribucion-buscar"]',
+          title: "Buscar y seleccionar producto",
+          body: "Busca por nombre o código. Al seleccionar un producto podrás ajustar la cantidad y añadirlo a la lista de salida.",
+          placement: "bottom",
+        },
+        {
+          id: "dist-carrito",
+          selector: '[data-tour="distribucion-carrito"]',
+          title: "Lista de salida",
+          body: "Este panel es tu “carrito”. Revisa lo que va a salir, elimina líneas si hace falta y define el destino/motivo.",
+          placement: "top",
+        },
+        {
+          id: "dist-confirmar",
+          selector: '[data-tour="distribucion-confirmar"]',
+          title: "Confirmar salida",
+          body: "Guarda la salida: se registran movimientos y el inventario se actualiza.",
+          placement: "top",
+        },
+        {
+          id: "dist-historial",
+          selector: '[data-tour="distribucion-historial"]',
+          title: "Historial",
+          body: "Consulta salidas anteriores para auditar qué se retiró, cuándo y a qué destino.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/inventario") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "inv-header",
+          selector: '[data-tour="inventario-header"]',
+          title: "Inventario",
+          body: "Vista principal para consultar existencias, precios, proveedor/categoría y caducidades.",
+          placement: "bottom",
+        },
+        {
+          id: "inv-toolbar",
+          selector: '[data-tour="inventario-toolbar"]',
+          title: "Filtros y acciones",
+          body: "Busca por texto, filtra por categoría/proveedor, activa avisos (stock bajo / caducidad) y exporta el inventario.",
+          placement: "bottom",
+        },
+        {
+          id: "inv-tabla",
+          selector: '[data-tour="inventario-table"]',
+          title: "Tabla de productos",
+          body: "Aquí ves el listado filtrado. Revisa stock y caducidad para tomar decisiones rápidas.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/pedidos") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "ped-header",
+          selector: '[data-tour="pedidos-header"]',
+          title: "Pedidos y compras",
+          body: "Gestiona el historial de pedidos y crea nuevos pedidos agrupados por proveedor.",
+          placement: "bottom",
+        },
+        {
+          id: "ped-kpis",
+          selector: '[data-tour="pedidos-kpis"]',
+          title: "Resumen",
+          body: "Indicadores rápidos de pedidos pendientes/incompletos e importe histórico.",
+          placement: "bottom",
+        },
+        {
+          id: "ped-historial",
+          selector: '[data-tour="pedidos-historial"]',
+          title: "Historial",
+          body: "Filtra por estado, exporta/importa y entra en recepcionar cuando toque.",
+          placement: "top",
+        },
+        {
+          id: "ped-nuevo",
+          selector: '[data-tour="pedidos-nuevo"]',
+          title: "Crear pedido",
+          body: "Crea un pedido nuevo: selecciona proveedor, busca productos, añade items y confirma.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/proveedores") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "prov-header",
+          selector: '[data-tour="proveedores-header"]',
+          title: "Proveedores",
+          body: "Directorio operativo de proveedores: contactos, teléfonos y correos.",
+          placement: "bottom",
+        },
+        {
+          id: "prov-toolbar",
+          selector: '[data-tour="proveedores-toolbar"]',
+          title: "Buscar, filtrar e importar/exportar",
+          body: "Usa la búsqueda y el filtro de estado. También puedes exportar o importar proveedores desde Excel.",
+          placement: "bottom",
+        },
+        {
+          id: "prov-nuevo",
+          selector: '[data-tour="proveedores-nuevo"]',
+          title: "Nuevo proveedor",
+          body: "Crea un proveedor nuevo (si tu rol lo permite).",
+          placement: "left",
+        },
+        {
+          id: "prov-tabla",
+          selector: '[data-tour="proveedores-table"]',
+          title: "Listado",
+          body: "Consulta, edita o elimina proveedores según permisos.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/bajas") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "bajas-header",
+          selector: '[data-tour="bajas-header"]',
+          title: "Bajas",
+          body: "Registra roturas, caducados, mermas o ajustes. Esto descuenta stock y deja trazabilidad.",
+          placement: "bottom",
+        },
+        {
+          id: "bajas-stats",
+          selector: '[data-tour="bajas-stats"]',
+          title: "Resumen del mes",
+          body: "Indicadores del mes: roturas, caducados, mermas y valor perdido total.",
+          placement: "bottom",
+        },
+        {
+          id: "bajas-registro",
+          selector: '[data-tour="bajas-registro"]',
+          title: "Registrar nueva baja",
+          body: "Busca un producto y selecciónalo para indicar tipo y cantidad. Puedes filtrar por categoría o ver próximos a caducar.",
+          placement: "top",
+        },
+        {
+          id: "bajas-actual",
+          selector: '[data-tour="bajas-actual"]',
+          title: "Registro actual",
+          body: "Aquí se agrupan los productos que vas a dar de baja antes de confirmar. Revisa pérdidas y elimina líneas si hace falta.",
+          placement: "top",
+        },
+        {
+          id: "bajas-acciones",
+          selector: '[data-tour="bajas-acciones"]',
+          title: "Motivo y confirmar",
+          body: "Añade un motivo (recomendado) y confirma para aplicar la baja en stock.",
+          placement: "top",
+        },
+        {
+          id: "bajas-historial",
+          selector: '[data-tour="bajas-historial"]',
+          title: "Historial",
+          body: "Consulta bajas registradas y filtra por fecha/tipo para auditoría.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/avisos") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "avisos-header",
+          selector: '[data-tour="avisos-header"]',
+          title: "Centro de avisos",
+          body: "Resumen de alertas del sistema (caducados, stock bajo y riesgo económico).",
+          placement: "bottom",
+        },
+        {
+          id: "avisos-kpis",
+          selector: '[data-tour="avisos-kpis"]',
+          title: "Indicadores",
+          body: "Mide rápidamente cuántas alertas hay y el valor estimado en riesgo.",
+          placement: "bottom",
+        },
+        {
+          id: "avisos-caducados",
+          selector: '[data-tour="avisos-caducados"]',
+          title: "Lotes caducados",
+          body: "Registra la baja del lote directamente desde aquí para que el aviso desaparezca y quede trazado.",
+          placement: "top",
+        },
+        {
+          id: "avisos-stock",
+          selector: '[data-tour="avisos-stockbajo"]',
+          title: "Stock bajo",
+          body: "Crea un pedido sugerido al proveedor para reponer el stock mínimo.",
+          placement: "top",
+        },
+        {
+          id: "avisos-fin",
+          selector: '[data-tour="avisos-financiero"]',
+          title: "Resumen financiero",
+          body: "Cuantifica pérdidas por caducidad y riesgo por stock bajo.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/rendimiento") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "rend-header",
+          selector: '[data-tour="rendimiento-header"]',
+          title: "Rendimiento",
+          body: "Analiza mermas y rendimiento real de ingredientes (bruto vs neto).",
+          placement: "bottom",
+        },
+        {
+          id: "rend-kpis",
+          selector: '[data-tour="rendimiento-kpis"]',
+          title: "Indicadores",
+          body: "Vista rápida de rendimiento medio, merma media y desperdicio total.",
+          placement: "bottom",
+        },
+        {
+          id: "rend-busqueda",
+          selector: '[data-tour="rendimiento-busqueda"]',
+          title: "Buscar ingrediente y nuevo análisis",
+          body: "Busca en el maestro de productos y crea un nuevo análisis para registrar pesos.",
+          placement: "bottom",
+        },
+        {
+          id: "rend-actual",
+          selector: '[data-tour="rendimiento-actual"]',
+          title: "Registro actual",
+          body: "Tabla con los registros actuales antes de guardar. Puedes eliminar filas y revisar totales.",
+          placement: "top",
+        },
+        {
+          id: "rend-guardar",
+          selector: '[data-tour="rendimiento-acciones"]',
+          title: "Observaciones y guardar",
+          body: "Añade observaciones y guarda el análisis. Si no hay conexión, se encola y se sincroniza después.",
+          placement: "top",
+        },
+        {
+          id: "rend-historial",
+          selector: '[data-tour="rendimiento-historial"]',
+          title: "Historial",
+          body: "Consulta análisis anteriores y elimina entradas si procede.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/escandallos") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "esc-header",
+          selector: '[data-tour="escandallos-header"]',
+          title: "Escandallos y recetas",
+          body: "Crea y consulta recetas con ingredientes para calcular coste, PVP y margen.",
+          placement: "bottom",
+        },
+        {
+          id: "esc-toolbar",
+          selector: '[data-tour="escandallos-toolbar"]',
+          title: "Búsquedas y nueva receta",
+          body: "Filtra por nombre o ingrediente. Usa “Nueva receta” para crear una ficha completa.",
+          placement: "bottom",
+        },
+        {
+          id: "esc-tabla",
+          selector: '[data-tour="escandallos-table"]',
+          title: "Listado",
+          body: "Consulta recetas, abre detalle, edita o elimina.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/configuracion") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "conf-header",
+          selector: '[data-tour="configuracion-header"]',
+          title: "Configuración",
+          body: "Gestiona tu perfil, alergias y preferencias de notificaciones/seguridad.",
+          placement: "bottom",
+        },
+        {
+          id: "conf-tabs",
+          selector: '[data-tour="configuracion-tabs"]',
+          title: "Secciones",
+          body: "Cambia entre Perfil, Alergias y Notificaciones. Cada sección se guarda por separado.",
+          placement: "bottom",
+        },
+        {
+          id: "conf-body",
+          selector: '[data-tour="configuracion-body"]',
+          title: "Contenido de la sección",
+          body: "Edita campos y pulsa Guardar. Algunas opciones activan alertas y bloqueos por seguridad alimentaria.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/auditoria") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "aud-header",
+          selector: '[data-tour="auditoria-header"]',
+          title: "Auditoría",
+          body: "Historial de acciones: movimientos, pedidos, bajas y cambios de productos.",
+          placement: "bottom",
+        },
+        {
+          id: "aud-filtros",
+          selector: '[data-tour="auditoria-filtros"]',
+          title: "Filtros",
+          body: "Filtra por tipo de acción, usuario y rango de fechas. Pulsa Aplicar para recargar.",
+          placement: "bottom",
+        },
+        {
+          id: "aud-tabla",
+          selector: '[data-tour="auditoria-tabla"]',
+          title: "Listado y detalle",
+          body: "Explora registros visibles y abre el detalle para ver datos de la operación.",
+          placement: "top",
+        },
+      ];
+    }
+
+    if (location.pathname === "/solicitudes-aprobacion") {
+      return [
+        ...base,
+        commonHelp,
+        {
+          id: "sol-header",
+          selector: '[data-tour="solicitudes-header"]',
+          title: "Solicitudes",
+          body: "Pantalla de administración para aprobar altas de cuenta y aplicar/rechazar cambios de contraseña.",
+          placement: "bottom",
+        },
+        {
+          id: "sol-altas",
+          selector: '[data-tour="solicitudes-altas"]',
+          title: "Altas de cuenta",
+          body: "Revisa datos del usuario, asigna rol y aprueba o rechaza la solicitud.",
+          placement: "top",
+        },
+        {
+          id: "sol-pass",
+          selector: '[data-tour="solicitudes-password"]',
+          title: "Cambios de contraseña",
+          body: "Define la nueva contraseña (mínimo 8 caracteres) y aplica o rechaza el cambio.",
           placement: "top",
         },
       ];
@@ -453,7 +855,18 @@ export default function AppLayout() {
           {renderNavSection(secondaryNavItems, "Gestión")}
         </nav>
 
-        <div className="border-t border-[var(--color-border-default)] pt-2">
+        <div className="border-t border-[var(--color-border-default)] pt-3">
+          <button
+            type="button"
+            className="mb-2 inline-flex w-full min-h-[46px] items-center justify-center gap-2 rounded-[14px] border border-[var(--color-border-default)] bg-white px-3 text-[13px] font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            onClick={() => setTourOpen(true)}
+            aria-label="Abrir tutorial guiado"
+            data-tour="tutorial-button"
+          >
+            <BookOpen className="h-4 w-4 text-primary" />
+            Tutorial
+          </button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -540,12 +953,13 @@ export default function AppLayout() {
 
               <button
                 type="button"
-                className="inline-flex h-[42px] items-center justify-center gap-2 rounded-[14px] border border-[var(--color-border-default)] bg-white px-3 text-[13px] font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50 max-[820px]:hidden"
+                className="inline-flex h-[42px] items-center justify-center gap-2 rounded-[14px] border border-[var(--color-border-default)] bg-white px-3 text-[13px] font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50"
                 onClick={() => setTourOpen(true)}
                 aria-label="Abrir tutorial guiado"
+                data-tour="tutorial-button"
               >
                 <BookOpen className="h-4 w-4 text-primary" />
-                Tutorial
+                <span className="hidden min-[520px]:inline">Tutorial</span>
               </button>
             </div>
           </div>

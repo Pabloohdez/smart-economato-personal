@@ -597,7 +597,10 @@ export default function PedidosPage() {
   return (
     <StaggerPage>
       <StaggerItem>
-        <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
+        <div
+          className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch"
+          data-tour="pedidos-header"
+        >
           <div>
             <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-brand-500)] text-white shadow-sm">
@@ -618,7 +621,7 @@ export default function PedidosPage() {
       </StaggerItem>
 
       <StaggerItem>
-        <section className="grid grid-cols-3 gap-3 mb-4 max-[900px]:grid-cols-1" aria-label="Resumen de pedidos">
+        <section className="grid grid-cols-3 gap-3 mb-4 max-[900px]:grid-cols-1" aria-label="Resumen de pedidos" data-tour="pedidos-kpis">
           <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[0_4px_20px_rgba(15,23,42,0.10)] flex flex-col gap-2 transition-shadow duration-200 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
             <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Pendientes</span>
             <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.pendientes}</strong>
@@ -642,7 +645,7 @@ export default function PedidosPage() {
 
       {vista === "lista" && (
         <StaggerItem>
-          <div className="mb-[25px]">
+          <div className="mb-[25px]" data-tour="pedidos-historial">
           <h3 className="mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5 text-[18px] text-[var(--color-text-strong)]">Historial de Pedidos</h3>
 
           {loadingPedidos && <Spinner label="Cargando pedidos..." />}
@@ -676,6 +679,7 @@ export default function PedidosPage() {
         <StaggerItem>
           <BackofficeTablePanel
             className="mb-[25px]"
+            data-tour="pedidos-nuevo"
             header={
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="m-0 flex items-center gap-2 text-[18px] text-[var(--color-text-strong)]">
