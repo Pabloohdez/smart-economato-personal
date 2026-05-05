@@ -1,4 +1,14 @@
-import tailwindcssAnimate from "tailwindcss-animate";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+let tailwindcssAnimate = null;
+try {
+  // Dependencia opcional: si no está instalada, no debe romper el build/CI.
+  const mod = require("tailwindcss-animate");
+  tailwindcssAnimate = mod?.default ?? mod ?? null;
+} catch {
+  tailwindcssAnimate = null;
+}
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -42,6 +52,6 @@ export default {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [tailwindcssAnimate].filter(Boolean),
 }
 
