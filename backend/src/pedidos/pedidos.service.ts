@@ -138,6 +138,10 @@ export class PedidosService {
     }
 
     return this.db.transaction(async (client) => {
+      // Serializa la creación/fusión por proveedor para evitar carreras:
+      // si dos profesores crean a la vez, el segundo espera y fusiona.
+      await client.query(`SELECT pg_advisory_xact_lock($1)`, [body.proveedorId]);
+
       // Si ya hay un pedido pendiente del mismo proveedor, lo reutilizamos
       // para evitar múltiples pedidos duplicados. La suma se hace por producto
       // (y por unidad si existe la columna `unidad`).
