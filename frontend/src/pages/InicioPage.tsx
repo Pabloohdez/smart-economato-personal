@@ -3,16 +3,21 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   BellRing,
+  CircleAlert,
   ExternalLink,
   LineChart as LineChartIcon,
   Newspaper,
   Package,
   ShoppingCart,
+  Timer,
   TrendingDown,
+  Wifi,
 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar } from "recharts";
 
 import { apiFetch } from "../services/apiClient";
+import { getProductos, getProveedores } from "../services/productosService";
+import type { Producto, Proveedor } from "../types";
 
 type ApiEnvelope<T> = {
   success?: boolean;
@@ -61,6 +66,17 @@ const appNewsFallback: NewsItem[] = [
   { title: "Seguridad: ajustes de acceso y auditoría", source: "Smart Economato", href: "#", dateLabel: "Reciente" },
 ];
 
+type AuditRow = {
+  id?: number | string;
+  accion?: string;
+  entidad?: string;
+  entidad_id?: number;
+  usuario_nombre?: string;
+  created_at?: string;
+  fecha?: string;
+  timestamp?: string;
+};
+
 export default function InicioPage() {
   type WidgetDataType = {
     inventario: number;
@@ -76,6 +92,14 @@ export default function InicioPage() {
     rendimiento: 0,
   });
   const [loading, setLoading] = useState(true);
+
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const [auditRows, setAuditRows] = useState<AuditRow[]>([]);
+  const [stockBajoItems, setStockBajoItems] = useState<Array<{ nombre: string; stock: number; stockMinimo: number }>>([]);
+  const [caducidadItems, setCaducidadItems] = useState<Array<{ nombre: string; fechaCaducidad: string; dias: number }>>([]);
+  const [caducadosRecientesCount, setCaducadosRecientesCount] = useState<number>(0);
+  const [topProveedores, setTopProveedores] = useState<Array<{ nombre: string; count: number }>>([]);
 
   useEffect(() => {
     async function fetchWidgetData() {
@@ -105,6 +129,7 @@ export default function InicioPage() {
           avisos: aviData?.count ?? 0,
           rendimiento: rendData?.percentage ?? 0,
         });
+        setLastUpdatedAt(new Date().toISOString());
       } catch (error) {
         console.error("Error fetching widget data:", error);
         // Set default fallback values
@@ -114,12 +139,114 @@ export default function InicioPage() {
           avisos: 4,
           rendimiento: -2,
         });
+        setLastUpdatedAt(new Date().toISOString());
       } finally {
         setLoading(false);
       }
     }
 
     fetchWidgetData();
+  }, []);
+
+  useEffect(() => {
+    const onOnline = () => setIsOnline(true);
+    const onOffline = () => setIsOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchDashboardExtras() {
+      try {
+        const [auditRes, productos, proveedores] = await Promise.all([
+          apiFetch<unknown>("/auditoria?limite=6&offset=0").catch(() => [] as unknown),
+          getProductos().catch(() => [] as Producto[]),
+          getProveedores().catch(() => [] as Proveedor[]),
+        ]);
+
+        if (cancelled) return;
+
+        const rows = (Array.isArray(auditRes) ? auditRes : (auditRes as any)?.data) as AuditRow[] | undefined;
+        setAuditRows(Array.isArray(rows) ? rows.slice(0, 6) : []);
+
+        // Stock bajo (top 6)
+        const low = (productos ?? [])
+          .map((p: any) => ({
+            nombre: String(p.nombre ?? "—"),
+            stock: Number(p.stock ?? 0),
+            stockMinimo: Number(p.stockMinimo ?? p.stockminimo ?? 0),
+          }))
+          .filter((p) => p.stockMinimo > 0 && p.stock <= p.stockMinimo)
+          .sort((a, b) => (a.stock - a.stockMinimo) - (b.stock - b.stockMinimo))
+          .slice(0, 6);
+        setStockBajoItems(low);
+
+        // Caducidades próximas (top 6, <= 30 días)
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        const cad = (productos ?? [])
+          .map((p: any) => {
+            const raw = p.fechaCaducidad ?? p.fechacaducidad ?? null;
+            const fecha = raw ? new Date(String(raw)) : null;
+            if (!fecha || Number.isNaN(fecha.getTime())) return null;
+            fecha.setHours(0, 0, 0, 0);
+            const dias = Math.round((fecha.getTime() - hoy.getTime()) / (24 * 60 * 60 * 1000));
+            // Evitar valores absurdos por datos corruptos
+            if (dias < -3650) return null; // > 10 años en el pasado
+            return {
+              nombre: String(p.nombre ?? "—"),
+              fechaCaducidad: fecha.toISOString().slice(0, 10),
+              dias,
+            };
+          })
+          .filter((x): x is { nombre: string; fechaCaducidad: string; dias: number } => !!x);
+
+        const proximas = cad
+          .filter((x) => x.dias >= 0 && x.dias <= 30)
+          .sort((a, b) => a.dias - b.dias)
+          .slice(0, 6);
+
+        const caducadosRecientes = cad.filter((x) => x.dias < 0 && x.dias >= -30).length;
+
+        setCaducidadItems(proximas);
+        setCaducadosRecientesCount(caducadosRecientes);
+
+        // Top proveedores por nº productos
+        const provById = new Map<string, string>(
+          (proveedores ?? []).map((p: any) => [String(p.id ?? p.proveedorId ?? ""), String(p.nombre ?? "Proveedor")]),
+        );
+        const counts = new Map<string, number>();
+        for (const p of productos ?? []) {
+          const pid = String((p as any).proveedorId ?? (p as any).proveedor_id ?? "");
+          if (!pid) continue;
+          counts.set(pid, (counts.get(pid) ?? 0) + 1);
+        }
+        const top = Array.from(counts.entries())
+          .map(([id, count]) => ({ nombre: provById.get(id) ?? `Proveedor #${id}`, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 5);
+        setTopProveedores(top);
+      } catch {
+        if (!cancelled) {
+          setAuditRows([]);
+          setStockBajoItems([]);
+          setCaducidadItems([]);
+          setCaducadosRecientesCount(0);
+          setTopProveedores([]);
+        }
+      }
+    }
+
+    fetchDashboardExtras();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const kpis = useMemo(
@@ -197,7 +324,7 @@ export default function InicioPage() {
   return (
     <StaggerPage className="inicio-page w-full h-full min-h-0 flex flex-col p-5 pt-4 max-[820px]:p-4 max-[820px]:pt-3 max-[520px]:p-3 max-[520px]:pt-2">
       <StaggerItem className="w-full">
-        <div className="grid grid-cols-4 gap-4 max-[1100px]:grid-cols-2 max-[520px]:gap-3">
+        <div data-tour="inicio-kpis" className="grid grid-cols-4 gap-4 max-[1100px]:grid-cols-2 max-[520px]:gap-3">
           {kpis.map((kpi) => {
             const Icon = kpi.icon;
             const tone =
@@ -243,7 +370,7 @@ export default function InicioPage() {
       </StaggerItem>
 
       <StaggerItem className="mt-5 grid flex-1 min-h-0 grid-cols-3 gap-5 max-[1100px]:grid-cols-1 max-[820px]:gap-4">
-        <section className="rounded-[26px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] shadow-[var(--shadow-sm)] overflow-hidden">
+        <section data-tour="inicio-noticias" className="rounded-[26px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] shadow-[var(--shadow-sm)] overflow-hidden">
           <header className="flex items-center justify-between gap-3 border-b border-[var(--color-border-default)] px-5 py-4">
             <div className="flex items-center gap-2">
               <Newspaper className="h-4 w-4 text-primary" aria-hidden="true" />
@@ -274,7 +401,7 @@ export default function InicioPage() {
           </div>
         </section>
 
-        <section className="rounded-[26px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] shadow-[var(--shadow-sm)] overflow-hidden">
+        <section data-tour="inicio-novedades" className="rounded-[26px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] shadow-[var(--shadow-sm)] overflow-hidden">
           <header className="flex items-center justify-between gap-3 border-b border-[var(--color-border-default)] px-5 py-4">
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary" aria-hidden="true" />
@@ -282,7 +409,45 @@ export default function InicioPage() {
             </div>
             <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Smart Economato</span>
           </header>
-          <div className="p-5 grid gap-3">
+          <div className="p-5 grid gap-4">
+            <div className="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
+              <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Conexión y sincronización</div>
+                    <div className="mt-2 flex items-center gap-2 text-[13px] font-extrabold text-[var(--color-text-strong)]">
+                      <Wifi className="h-4 w-4 text-primary" aria-hidden="true" />
+                      {isOnline ? "Conectado" : "Sin conexión"}
+                    </div>
+                    <div className="mt-1 text-[12px] text-[var(--color-text-muted)]">
+                      {lastUpdatedAt ? `Última actualización: ${new Date(lastUpdatedAt).toLocaleString("es-ES")}` : "—"}
+                    </div>
+                  </div>
+                  <span className={`inline-flex rounded-[14px] border px-3 py-1.5 text-[12px] font-extrabold ${
+                    isOnline ? "border-emerald-100 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-50 text-slate-600"
+                  }`}>
+                    <Timer className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+                <div className="text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Top proveedores</div>
+                <div className="mt-2 grid gap-2">
+                  {topProveedores.length ? topProveedores.map((p) => (
+                    <div key={p.nombre} className="flex items-center justify-between gap-3 text-[12px]">
+                      <span className="truncate font-semibold text-[var(--color-text-strong)]">{p.nombre}</span>
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-extrabold text-slate-600">
+                        {p.count}
+                      </span>
+                    </div>
+                  )) : (
+                    <div className="text-[12px] text-[var(--color-text-muted)]">Sin datos</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {appNewsFallback.map((n) => (
               <div
                 key={`${n.source}-${n.title}`}
@@ -305,7 +470,7 @@ export default function InicioPage() {
           </div>
         </section>
 
-        <section className="rounded-[26px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] shadow-[var(--shadow-sm)] overflow-hidden">
+        <section data-tour="inicio-estadisticas" className="rounded-[26px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] shadow-[var(--shadow-sm)] overflow-hidden">
           <header className="flex items-center justify-between gap-3 border-b border-[var(--color-border-default)] px-5 py-4">
             <div className="flex items-center gap-2">
               <LineChartIcon className="h-4 w-4 text-primary" aria-hidden="true" />
@@ -351,6 +516,82 @@ export default function InicioPage() {
                   <Bar dataKey="value" radius={[10, 10, 10, 10]} fill="rgba(179,49,49,0.75)" />
                 </BarChart>
               </ResponsiveContainer>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 max-[520px]:grid-cols-1">
+              <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[12px] font-extrabold text-[var(--color-text-strong)]">Stock bajo (detalle)</div>
+                  <CircleAlert className="h-4 w-4 text-orange-600" aria-hidden="true" />
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {stockBajoItems.length ? stockBajoItems.map((p) => (
+                    <div key={p.nombre} className="flex items-center justify-between gap-3 text-[12px]">
+                      <span className="truncate font-semibold text-[var(--color-text-strong)]">{p.nombre}</span>
+                      <span className="rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[11px] font-extrabold text-orange-700">
+                        {p.stock}/{p.stockMinimo}
+                      </span>
+                    </div>
+                  )) : (
+                    <div className="text-[12px] text-[var(--color-text-muted)]">Sin incidencias</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[12px] font-extrabold text-[var(--color-text-strong)]">Caducidades próximas</div>
+                  <Timer className="h-4 w-4 text-red-600" aria-hidden="true" />
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {caducidadItems.length ? caducidadItems.map((p) => (
+                    <div key={`${p.nombre}-${p.fechaCaducidad}`} className="flex items-center justify-between gap-3 text-[12px]">
+                      <span className="truncate font-semibold text-[var(--color-text-strong)]">{p.nombre}</span>
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${
+                        p.dias <= 7 ? "border-orange-100 bg-orange-50 text-orange-700" : "border-slate-200 bg-slate-50 text-slate-600"
+                      }`}>
+                        {`${p.dias}d`} · {p.fechaCaducidad}
+                      </span>
+                    </div>
+                  )) : (
+                    <div className="text-[12px] text-[var(--color-text-muted)]">Sin datos</div>
+                  )}
+                </div>
+                {caducadosRecientesCount > 0 ? (
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-red-100 bg-red-50 px-3 py-1 text-[11px] font-extrabold text-red-700">
+                    <CircleAlert className="h-4 w-4" aria-hidden="true" />
+                    {caducadosRecientesCount} caducados (últimos 30 días)
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[12px] font-extrabold text-[var(--color-text-strong)]">Actividad reciente</div>
+                <span className="text-[11px] text-[var(--color-text-muted)]">Auditoría</span>
+              </div>
+              <div className="mt-3 grid gap-2">
+                {auditRows.length ? auditRows.map((r, idx) => {
+                  const ts = r.created_at ?? r.fecha ?? r.timestamp ?? null;
+                  const when = ts ? new Date(String(ts)).toLocaleString("es-ES") : "—";
+                  const label = `${String(r.accion ?? "Acción")} · ${String(r.entidad ?? "Entidad")}`;
+                  const who = String(r.usuario_nombre ?? "Sistema");
+                  return (
+                    <div key={`${String(r.id ?? idx)}`} className="flex items-start justify-between gap-3 rounded-[14px] border border-slate-200 bg-slate-50 px-3 py-2">
+                      <div className="min-w-0">
+                        <div className="truncate text-[12px] font-extrabold text-[var(--color-text-strong)]">{label}</div>
+                        <div className="mt-0.5 text-[11px] text-[var(--color-text-muted)]">{who}</div>
+                      </div>
+                      <div className="shrink-0 text-right text-[11px] font-semibold text-slate-500">
+                        {when}
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div className="text-[12px] text-[var(--color-text-muted)]">Sin registros recientes</div>
+                )}
+              </div>
             </div>
           </div>
         </section>

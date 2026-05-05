@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   BellRing,
+  BookOpen,
   CalendarDays,
   ChartPie,
   ChefHat,
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import RouteErrorBoundary from "../components/app/RouteErrorBoundary";
 import PageTransition from "../components/ui/PageTransition";
+import GuidedTour, { type GuidedTourStep } from "../components/ui/GuidedTour";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +51,13 @@ const navItems = [
   { to: "/escandallos", label: "Escandallos", icon: ChefHat, roles: ["administrador", "profesor", "alumno"] },
   { to: "/rendimiento", label: "Rendimiento", icon: ChartPie, roles: ["administrador", "profesor", "alumno"] },
   { to: "/avisos", label: "Avisos", icon: BellRing, roles: ["administrador", "profesor", "alumno"] },
+  {
+    to: "/tutorial",
+    label: "Guía de uso",
+    icon: BookOpen,
+    separated: true,
+    roles: ["administrador", "profesor", "alumno"],
+  },
   {
     to: "/solicitudes-aprobacion",
     label: "Solicitudes",
@@ -89,6 +98,7 @@ export default function AppLayout() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isSmallViewport, setIsSmallViewport] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const productosQuery = useQuery({
     queryKey: queryKeys.productos,
@@ -157,6 +167,52 @@ export default function AppLayout() {
   );
 
   const userInitial = userName.trim().charAt(0).toUpperCase() || "U";
+
+  const tourSteps: GuidedTourStep[] = useMemo(() => {
+    if (location.pathname === "/inicio") {
+      return [
+        {
+          id: "kpis",
+          selector: '[data-tour="inicio-kpis"]',
+          title: "Métricas rápidas",
+          body: "Aquí ves el estado general: stock bajo, pedidos pendientes, avisos y mermas. Sirve para priorizar tareas del día.",
+          placement: "bottom",
+        },
+        {
+          id: "noticias",
+          selector: '[data-tour="inicio-noticias"]',
+          title: "Noticias del país",
+          body: "Panel informativo de actualidad. Podemos conectarlo a una fuente real (RSS/API) si lo necesitas.",
+          placement: "right",
+        },
+        {
+          id: "novedades",
+          selector: '[data-tour="inicio-novedades"]',
+          title: "Novedades de la aplicación",
+          body: "Aquí se publican cambios, recordatorios y estado de conexión/sincronización.",
+          placement: "right",
+        },
+        {
+          id: "estadisticas",
+          selector: '[data-tour="inicio-estadisticas"]',
+          title: "Estadísticas y detalle",
+          body: "Gráficos de tendencia y listas útiles (stock bajo, caducidades, auditoría) para actuar rápido.",
+          placement: "top",
+        },
+      ];
+    }
+
+    // Placeholder: se pueden añadir tours por pantalla aquí.
+    return [
+      {
+        id: "menu",
+        selector: "#app-sidebar",
+        title: "Navegación",
+        body: "Usa el menú lateral para cambiar de módulo. Pulsa 'Tutorial' cuando quieras una guía contextual.",
+        placement: "right",
+      },
+    ];
+  }, [location.pathname]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -275,6 +331,7 @@ export default function AppLayout() {
 
   return (
     <div className="h-[100dvh] w-full min-w-0 overflow-x-hidden bg-[var(--color-bg-canvas)] text-[var(--color-text-strong)] font-[var(--font-family-base)] relative">
+      <GuidedTour open={tourOpen} steps={tourSteps} onClose={() => setTourOpen(false)} />
       <div
         className={`fixed inset-0 bg-[rgba(15,23,42,0.45)] z-[90] transition-opacity duration-300 ${sidebarOpen ? "opacity-100 block" : "opacity-0 hidden"}`}
         onClick={() => setSidebarOpen(false)}
@@ -395,6 +452,16 @@ export default function AppLayout() {
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span>{todayLabel}</span>
               </div>
+
+              <button
+                type="button"
+                className="inline-flex h-[42px] items-center justify-center gap-2 rounded-[14px] border border-[var(--color-border-default)] bg-white px-3 text-[13px] font-extrabold text-slate-700 shadow-sm transition hover:bg-slate-50 max-[820px]:hidden"
+                onClick={() => setTourOpen(true)}
+                aria-label="Abrir tutorial guiado"
+              >
+                <BookOpen className="h-4 w-4 text-primary" />
+                Tutorial
+              </button>
             </div>
           </div>
         </header>

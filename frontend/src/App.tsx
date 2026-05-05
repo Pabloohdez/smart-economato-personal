@@ -30,6 +30,7 @@ const IngresarProductoPage = lazy(() => import("./pages/IngresarProductoPage"));
 const CrearUsuarioPage = lazy(() => import("./pages/CrearUsuarioPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const TutorialPage = lazy(() => import("./pages/TutorialPage"));
 
 function AppRoutes() {
   const location = useLocation();
@@ -53,6 +54,7 @@ function AppRoutes() {
           >
             <Route index element={<Navigate to="/inicio" replace />} />
             <Route path="inicio" element={<InicioPage />} />
+            <Route path="tutorial" element={<TutorialPage />} />
             <Route path="solicitudes-aprobacion" element={<AdminApprovalPage />} />
             <Route path="recepcion" element={<RecepcionPage />} />
             <Route path="distribucion" element={<DistribucionPage />} />
