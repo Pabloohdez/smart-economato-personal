@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de API | Smart Economato</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f0f2f5;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .test-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .pending {
+            color: orange;
+        }
+
+        code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #115293;
+        }
+
+        #log {
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            background: #222;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stress-test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stress-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .stress-controls input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 120px;
+        }
+
+        .stress-controls label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .btn-danger {
+            background: #c53030 !important;
+        }
+
+        .btn-danger:hover {
+            background: #9b2c2c !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #1976d2;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3748;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1976d2, #4299e1);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛠️ Verificador de Errores API</h1>
+    <p>Esta herramienta ejecuta pruebas contra el backend NestJS (carpeta backend/). Base URL: <code>http://localhost:3000/api</code>.</p>
+
+    <button onclick="runTests()">▶️ Ejecutar Pruebas</button>
+
+    <div id="results"></div>
+
+    <!-- Sección de Prueba de Estrés -->
+    <div class="stress-test-section">
+        <h2>⚡ Prueba de Estrés - Bombardeo de Peticiones</h2>
+        <p>Envía múltiples peticiones simultáneas para testear la capacidad del servidor.</p>
+
+        <div class="stress-controls">
+            <div>
+                <label for="numRequests">Peticiones totales:</label>
+                <input type="number" id="numRequests" value="100" min="1" max="10000">
+            </div>
+            <div>
+                <label for="concurrency">Concurrencia:</label>
+                <input type="number" id="concurrency" value="10" min="1" max="100">
+            </div>
+            <button onclick="startStressTest()" id="btnStartStress">🚀 Iniciar Prueba</button>
+            <button onclick="stopStressTest()" id="btnStopStress" class="btn-danger" style="display: none;">🛑
+                Detener</button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar" style="width: 0%;">0%</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Enviadas</div>
+                <div class="stat-value" id="statSent">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #48bb78;">
+                <div class="stat-label">Exitosas</div>
+                <div class="stat-value" id="statSuccess" style="color: #48bb78;">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #f56565;">
+                <div class="stat-label">Fallidas</div>
+                <div class="stat-value" id="statFailed" style="color: #f56565;">0</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #ed8936;">
+                <div class="stat-label">Tiempo Promedio</div>
+                <div class="stat-value" id="statAvgTime" style="color: #ed8936;">0ms</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="log">Logs de consola aparecerán aquí...</div>
+
+    <script>
+        const API_URL = "http://localhost:3000/api";
+
+        function log(msg) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerText += msg + "\n";
+            console.log(msg);
+        }
+
+        function createResultCard(title, id) {
+            const div = document.createElement('div');
+            div.className = 'test-card';
+            div.innerHTML = `<strong>${title}</strong>: <span id="${id}" class="status pending">Pendiente...</span>`;
+            document.getElementById('results').appendChild(div);
+            return document.getElementById(id);
+        }
+
+        function updateStatus(element, success, msg) {
+            element.className = success ? 'status success' : 'status error';
+            element.innerText = success ? `PASÓ - ${msg}` : `FALLÓ - ${msg}`;
+        }
+
+        async function runTests() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('log').innerText = '';
+
+            log("Iniciando pruebas...");
+
+            // TEST 1: Verificar Login Incorrecto (Debe dar 401)
+            const status1 = createResultCard("Login: Credenciales Incorrectas", "res1");
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: "usuario_falso_123", password: "badpassword" })
+                });
+                const json = await res.json();
+                log(`Test 1 Response: ${res.status} ${JSON.stringify(json)}`);
+
+                if (res.status === 401 && json.success === false) {
+                    updateStatus(status1, true, "Retornó 401 y success: false");
+                } else {
+                    updateStatus(status1, false, `Esperaba 401, recibió ${res.status}`);
+                }
+            } catch (e) {
+                updateStatus(status1, false, `Error de red: ${e.message}`);
+            }
+
+            // TEST 2: Verificar Inyección SQL en Login (Debe ser bloqueado y NO dar error SQL)
+            const status2 = createResultCard("Seguridad: Intento SQL Injection", "res2");
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: "' OR '1'='1", password: "' OR '1'='1" })
+                });
+                const json = await res.json();
+                log(`Test 2 Response: ${res.status} ${JSON.stringify(json)}`);
+
+                // Si fuera vulnerable, podría devolver 200 y loguear al primer usuario
+                if (res.status === 401 && json.success === false) {
+                    updateStatus(status2, true, "Inyección bloqueada correctamente (401)");
+                } else if (res.status === 200) {
+                    updateStatus(status2, false, "¡PELIGRO! Inyección SQL exitosa (Login permitido)");
+                } else {
+                    updateStatus(status2, true, `Bloqueado con estado ${res.status}`);
+                }
+            } catch (e) {
+                updateStatus(status2, false, `Error de red: ${e.message}`);
+            }
+
+            // TEST 3: Obtener Productos (Formato Estandarizado)
+            const status3 = createResultCard("Estandarización: GET Productos", "res3");
+            try {
+                const res = await fetch(`${API_URL}/productos`);
+                const json = await res.json();
+                log(`Test 3 Response: ${JSON.stringify(json).substring(0, 100)}...`);
+
+                if (json.success === true && Array.isArray(json.data)) {
+                    updateStatus(status3, true, "Respuesta válida { success: true, data: [...] }");
+                } else {
+                    updateStatus(status3, false, "Formato de respuesta incorrecto");
+                }
+            } catch (e) {
+                updateStatus(status3, false, `Error: ${e.message}`);
+            }
+
+            // TEST 4: Método no permitido (POST a Productos sin datos)
+            const status4 = createResultCard("Validación: Datos faltantes", "res4");
+            try {
+                // Intentar crear producto vacío
+                const res = await fetch(`${API_URL}/productos`, {
+                    method: 'POST',
+                    body: JSON.stringify({})
+                });
+                // Nota: api/productos actual podría no tener validación estricta aún, pero verificamos que no crashee
+                const json = await res.json();
+                log(`Test 4 Response: ${res.status} ${JSON.stringify(json)}`);
+
+                if (json.success === false || res.status >= 400) {
+                    updateStatus(status4, true, "Detectó error correctamente");
+                } else {
+                    updateStatus(status4, false, "Permitió operación vacía o respuesta inesperada");
+                }
+            } catch (e) {
+                updateStatus(status4, true, `Error controlado: ${e.message}`);
+            }
+
+            log("Pruebas finalizadas.");
+        }
+
+        // ========== PRUEBA DE ESTRÉS ==========
+        let stressTestRunning = false;
+        let stressTestAborted = false;
+        let stressStats = {
+            sent: 0,
+            success: 0,
+            failed: 0,
+            times: []
+        };
+
+        async function startStressTest() {
+            const totalRequests = parseInt(document.getElementById('numRequests').value);
+            const concurrency = parseInt(document.getElementById('concurrency').value);
+
+            if (totalRequests < 1 || concurrency < 1) {
+                alert('Por favor, ingresa valores válidos.');
+                return;
+            }
+
+            // Reset
+            stressTestRunning = true;
+            stressTestAborted = false;
+            stressStats = { sent: 0, success: 0, failed: 0, times: [] };
+            updateStressUI();
+
+            // Cambiar botones
+            document.getElementById('btnStartStress').style.display = 'none';
+            document.getElementById('btnStopStress').style.display = 'inline-block';
+            document.getElementById('numRequests').disabled = true;
+            document.getElementById('concurrency').disabled = true;
+
+            log(`\n🚀 INICIANDO PRUEBA DE ESTRÉS: ${totalRequests} peticiones con concurrencia ${concurrency}`);
+
+            const startTime = Date.now();
+
+            // Dividir en lotes
+            const batches = Math.ceil(totalRequests / concurrency);
+
+            for (let i = 0; i < batches && !stressTestAborted; i++) {
+                const batchSize = Math.min(concurrency, totalRequests - stressStats.sent);
+                const promises = [];
+
+                for (let j = 0; j < batchSize; j++) {
+                    promises.push(sendStressRequest());
+                }
+
+                await Promise.allSettled(promises);
+                updateStressUI();
+            }
+
+            const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+            if (stressTestAborted) {
+                log(`⛔ Prueba detenida manualmente después de ${stressStats.sent} peticiones en ${duration}s`);
+            } else {
+                log(`✅ Prueba completada en ${duration}s`);
+                log(`📊 Resultados: ${stressStats.success} exitosas, ${stressStats.failed} fallidas`);
+                log(`⏱️ Tiempo promedio: ${getAverageTime()}ms`);
+            }
+
+            // Restaurar botones
+            document.getElementById('btnStartStress').style.display = 'inline-block';
+            document.getElementById('btnStopStress').style.display = 'none';
+            document.getElementById('numRequests').disabled = false;
+            document.getElementById('concurrency').disabled = false;
+            stressTestRunning = false;
+        }
+
+        async function sendStressRequest() {
+            const start = Date.now();
+
+            try {
+                const res = await fetch(`${API_URL}/productos`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest' // Asegurar que reciba JSON
+                    }
+                });
+
+                const elapsed = Date.now() - start;
+                stressStats.times.push(elapsed);
+                stressStats.sent++;
+
+                if (res.ok) {
+                    stressStats.success++;
+                } else {
+                    stressStats.failed++;
+                    log(`❌ Error ${res.status} en petición #${stressStats.sent}`);
+                }
+            } catch (error) {
+                const elapsed = Date.now() - start;
+                stressStats.times.push(elapsed);
+                stressStats.sent++;
+                stressStats.failed++;
+                log(`💥 Fallo de red en petición #${stressStats.sent}: ${error.message}`);
+            }
+        }
+
+        function stopStressTest() {
+            stressTestAborted = true;
+            log('🛑 Deteniendo prueba de estrés...');
+        }
+
+        function updateStressUI() {
+            const totalRequests = parseInt(document.getElementById('numRequests').value);
+            const progress = (stressStats.sent / totalRequests) * 100;
+
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').innerText = Math.round(progress) + '%';
+
+            document.getElementById('statSent').innerText = stressStats.sent;
+            document.getElementById('statSuccess').innerText = stressStats.success;
+            document.getElementById('statFailed').innerText = stressStats.failed;
+            document.getElementById('statAvgTime').innerText = getAverageTime() + 'ms';
+        }
+
+        function getAverageTime() {
+            if (stressStats.times.length === 0) return 0;
+            const sum = stressStats.times.reduce((a, b) => a + b, 0);
+            return Math.round(sum / stressStats.times.length);
+        }
+
+    </script>
+</body>
+
+</html>

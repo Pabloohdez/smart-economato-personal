@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probador de Páginas de Error | Smart Economato</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .error-demo-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .error-demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .error-icon-demo {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .error-code-demo {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .error-title-demo {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .error-desc {
+            font-size: 14px;
+            color: #718096;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn-test {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-test:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .code-400 {
+            color: #f59e0b;
+        }
+
+        .code-401 {
+            color: #8b5cf6;
+        }
+
+        .code-403 {
+            color: #ef4444;
+        }
+
+        .code-404 {
+            color: #3b82f6;
+        }
+
+        .code-500 {
+            color: #dc2626;
+        }
+
+        .code-503 {
+            color: #f97316;
+        }
+
+        .instructions {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-top: 30px;
+        }
+
+        .instructions h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .instructions li:last-child {
+            border-bottom: none;
+        }
+
+        .instructions code {
+            background: #edf2f7;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #c53030;
+            font-size: 13px;
+        }
+
+        .note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #92400e;
+        }
+
+        .note strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧪 Probador de Páginas de Error</h1>
+        <p class="subtitle">Haz clic en cada tarjeta para ver la página de error correspondiente en acción</p>
+
+        <div class="grid">
+            <!-- 400 Bad Request -->
+            <div class="error-demo-card">
+                <div class="error-icon-demo">⚠️</div>
+                <div class="error-code-demo code-400">400</div>
+                <div class="error-title-demo">Solicitud Incorrecta</div>
+                <div class="error-desc">Se activa cuando los datos enviados no son válidos o faltan campos obligatorios.
+                </div>
+                <a href="#" class="btn-test">
+                    <i class="fa-solid fa-flask"></i> Probar Error 400
+                </a>
+            </div>
+
+            <!-- 401 Unauthorized -->
+            <div class="error-demo-card">
+                <div class="error-icon-demo">🔒</div>
+                <div class="error-code-demo code-401">401</div>
+                <div class="error-title-demo">No Autorizado</div>
+                <div class="error-desc">Ocurre cuando intentas acceder sin credenciales válidas o sesión activa.</div>
+                <a href="#" class="btn-test">
+                    <i class="fa-solid fa-flask"></i> Probar Error 401
+                </a>
+            </div>
+
+            <!-- 403 Forbidden -->
+            <div class="error-demo-card">
+                <div class="error-icon-demo">🚫</div>
+                <div class="error-code-demo code-403">403</div>
+                <div class="error-title-demo">Acceso Prohibido</div>
+                <div class="error-desc">Se muestra cuando no tienes permisos para acceder a un recurso.</div>
+                <a href="#" class="btn-test">
+                    <i class="fa-solid fa-flask"></i> Probar Error 403
+                </a>
+            </div>
+
+            <!-- 404 Not Found -->
+            <div class="error-demo-card">
+                <div class="error-icon-demo">🔍</div>
+                <div class="error-code-demo code-404">404</div>
+                <div class="error-title-demo">Página No Encontrada</div>
+                <div class="error-desc">Aparece cuando intentas acceder a una URL que no existe.</div>
+                <a href="pagina-que-no-existe-123.html" class="btn-test">
+                    <i class="fa-solid fa-flask"></i> Probar Error 404
+                </a>
+            </div>
+
+            <!-- 500 Internal Server Error -->
+            <div class="error-demo-card">
+                <div class="error-icon-demo">⚙️</div>
+                <div class="error-code-demo code-500">500</div>
+                <div class="error-title-demo">Error del Servidor</div>
+                <div class="error-desc">Sucede cuando hay un error crítico en el backend (BD caída, error PHP, etc.).
+                </div>
+                <a href="#" class="btn-test">
+                    <i class="fa-solid fa-flask"></i> Probar Error 500
+                </a>
+            </div>
+
+            <!-- 503 Service Unavailable -->
+            <div class="error-demo-card">
+                <div class="error-icon-demo">🛠️</div>
+                <div class="error-code-demo code-503">503</div>
+                <div class="error-title-demo">Servicio No Disponible</div>
+                <div class="error-desc">Se activa cuando el servidor está en mantenimiento o sobrecargado.</div>
+                <a href="#" class="btn-test">
+                    <i class="fa-solid fa-flask"></i> Probar Error 503
+                </a>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2><i class="fa-solid fa-lightbulb"></i> Cómo Provocar Errores Reales</h2>
+            <ul>
+                <li>
+                    <strong>400 (Datos Inválidos):</strong> Envía un POST a <code>/api/login</code> sin username o
+                    password
+                </li>
+                <li>
+                    <strong>401 (No Autorizado):</strong> Intenta login con credenciales incorrectas en
+                    <code>/api/login</code>
+                </li>
+                <li>
+                    <strong>403 (Prohibido):</strong> Accede a <code>/api/auditoria</code> sin ser admin (sin usuario_actual o sin permisos)
+                </li>
+                <li>
+                    <strong>404 (No Encontrado):</strong> Navega a cualquier URL que no exista, ej:
+                    <code>/cualquier-cosa.html</code>
+                </li>
+                <li>
+                    <strong>500 (Error Servidor):</strong> Si la base de datos (Supabase) no está disponible, <code>/api/productos</code> devolverá error
+                </li>
+                <li>
+                    <strong>503 (Mantenimiento):</strong> Edita <code>.htaccess</code> y añade
+                    <code>ErrorDocument 503 /errors/503.html</code>
+                </li>
+            </ul>
+
+            <div class="note">
+                <strong><i class="fa-solid fa-info-circle"></i> Nota Importante:</strong>
+                El backend NestJS devuelve siempre JSON con formato <code>{ success, error: { message, code } }</code>.
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

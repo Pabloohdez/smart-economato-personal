@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "ESNext",
+        "lib": [
+            "ES2020",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "moduleResolution": "bundler",
+        "allowJs": true,
+        "checkJs": false,
+        "outDir": "./frontend/dist",
+        "rootDir": "./frontend/src",
+        "strict": false,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "allowSyntheticDefaultImports": true
+    },
+    "include": [
+        "frontend/src/**/*.ts",
+        "frontend/src/**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "api"
+    ]
+}
