@@ -117,7 +117,7 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
 
   if (!open || !step) return null;
 
-  const pad = 10;
+  const pad = 12;
   const rect = targetRect;
 
   const highlight = rect
@@ -129,9 +129,9 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
       }
     : null;
 
-  const tooltipMaxW = 420;
+  const tooltipMaxW = 440;
   const tooltipW = Math.min(tooltipMaxW, Math.max(320, Math.round(window.innerWidth * 0.34)));
-  const tooltipH = 160;
+  const tooltipH = 172;
 
   const defaultTop = 90;
   const defaultLeft = Math.round((window.innerWidth - tooltipW) / 2);
@@ -161,20 +161,66 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
 
   const progressLabel = `${idx + 1} / ${steps.length}`;
 
+  const highlightCenter = rect
+    ? {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      }
+    : null;
+
+  const tipAnchor = {
+    x: clamp(tipLeft + tooltipW / 2, 12, window.innerWidth - 12),
+    y: clamp(tipTop + 12, 12, window.innerHeight - 12),
+  };
+
   return (
     <div className="fixed inset-0 z-[99990]" role="dialog" aria-modal="true" aria-label="Tutorial guiado">
-      <div className="absolute inset-0 bg-[rgba(2,6,23,0.58)]" onClick={onClose} />
+      {/* Overlay con "hueco" (spotlight) */}
+      <svg className="absolute inset-0 h-full w-full" aria-hidden="true" onClick={onClose}>
+        <defs>
+          <mask id="guided-tour-mask">
+            <rect x="0" y="0" width="100%" height="100%" fill="white" />
+            {highlight ? (
+              <rect
+                x={highlight.left}
+                y={highlight.top}
+                width={highlight.width}
+                height={highlight.height}
+                rx="18"
+                ry="18"
+                fill="black"
+              />
+            ) : null}
+          </mask>
+          <filter id="guided-tour-soft">
+            <feGaussianBlur stdDeviation="6" />
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="100%" height="100%" fill="rgba(2,6,23,0.70)" mask="url(#guided-tour-mask)" />
+        {/* brillo suave alrededor del hueco */}
+        {highlight ? (
+          <rect
+            x={highlight.left}
+            y={highlight.top}
+            width={highlight.width}
+            height={highlight.height}
+            rx="18"
+            ry="18"
+            fill="rgba(255,255,255,0.10)"
+            filter="url(#guided-tour-soft)"
+          />
+        ) : null}
+      </svg>
 
       {highlight ? (
         <div
-          className="absolute rounded-[18px] border border-white/40 shadow-[0_0_0_9999px_rgba(2,6,23,0.58),0_22px_60px_rgba(0,0,0,0.45)]"
+          className="absolute rounded-[18px] border-2 border-white/90 shadow-[0_24px_70px_rgba(0,0,0,0.55)]"
           style={{
             top: highlight.top,
             left: highlight.left,
             width: highlight.width,
             height: highlight.height,
-            background: "rgba(255,255,255,0.04)",
-            backdropFilter: "blur(1px)",
+            background: "transparent",
           }}
           aria-hidden="true"
         />
@@ -186,6 +232,45 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
           No encuentro el elemento de este paso. Puedes continuar.
         </div>
       )}
+
+      {/* Pulso para que se vea claro el foco */}
+      {highlight ? (
+        <div
+          className="absolute rounded-[18px]"
+          style={{
+            top: highlight.top,
+            left: highlight.left,
+            width: highlight.width,
+            height: highlight.height,
+            boxShadow: "0 0 0 0 rgba(255,255,255,0.55)",
+            animation: "guidedTourPulse 1.35s ease-out infinite",
+            pointerEvents: "none",
+          }}
+          aria-hidden="true"
+        />
+      ) : null}
+
+      {/* Flecha (línea) hacia el elemento */}
+      {highlightCenter ? (
+        <svg className="absolute inset-0 h-full w-full pointer-events-none" aria-hidden="true">
+          <defs>
+            <marker id="guided-tour-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 Z" fill="rgba(255,255,255,0.95)" />
+            </marker>
+          </defs>
+          <line
+            x1={tipAnchor.x}
+            y1={tipAnchor.y}
+            x2={highlightCenter.x}
+            y2={highlightCenter.y}
+            stroke="rgba(255,255,255,0.85)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            markerEnd="url(#guided-tour-arrow)"
+            opacity="0.9"
+          />
+        </svg>
+      ) : null}
 
       <div
         className="absolute rounded-[22px] border border-white/18 bg-white text-slate-900 shadow-[0_30px_80px_rgba(0,0,0,0.55)]"
@@ -247,6 +332,15 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
           </div>
         </div>
       </div>
+
+      {/* keyframes inline (sin tocar CSS global) */}
+      <style>{`
+        @keyframes guidedTourPulse {
+          0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.55); }
+          70% { box-shadow: 0 0 0 14px rgba(255,255,255,0.00); }
+          100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.00); }
+        }
+      `}</style>
     </div>
   );
 }

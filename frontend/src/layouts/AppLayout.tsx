@@ -169,49 +169,65 @@ export default function AppLayout() {
   const userInitial = userName.trim().charAt(0).toUpperCase() || "U";
 
   const tourSteps: GuidedTourStep[] = useMemo(() => {
+    const base: GuidedTourStep[] = [
+      {
+        id: "menu",
+        selector: "#app-sidebar",
+        title: "Menú lateral",
+        body: "Desde aquí cambias de módulo (Inventario, Pedidos, Recepción…). En móvil se abre con el botón de arriba.",
+        placement: "right",
+      },
+      {
+        id: "contenido",
+        selector: "#main-content",
+        title: "Área de trabajo",
+        body: "Aquí aparece el contenido del módulo actual. Si hay tablas o filtros, siempre estarán dentro de esta zona.",
+        placement: "top",
+      },
+      {
+        id: "perfil",
+        selector: "#app-sidebar [aria-label=\"Menú de perfil\"]",
+        title: "Perfil y sesión",
+        body: "Aquí puedes ver tu rol y cerrar sesión cuando termines.",
+        placement: "right",
+      },
+    ];
+
     if (location.pathname === "/inicio") {
       return [
+        ...base,
         {
           id: "kpis",
           selector: '[data-tour="inicio-kpis"]',
           title: "Métricas rápidas",
-          body: "Aquí ves el estado general: stock bajo, pedidos pendientes, avisos y mermas. Sirve para priorizar tareas del día.",
+          body: "Resumen del estado general: stock bajo, pedidos pendientes, avisos y mermas.",
           placement: "bottom",
         },
         {
           id: "noticias",
           selector: '[data-tour="inicio-noticias"]',
           title: "Noticias del país",
-          body: "Panel informativo de actualidad. Podemos conectarlo a una fuente real (RSS/API) si lo necesitas.",
+          body: "Panel de actualidad. Podemos conectarlo a una fuente real (RSS/API) si lo necesitas.",
           placement: "right",
         },
         {
           id: "novedades",
           selector: '[data-tour="inicio-novedades"]',
           title: "Novedades de la aplicación",
-          body: "Aquí se publican cambios, recordatorios y estado de conexión/sincronización.",
+          body: "Cambios, recordatorios y estado de conexión/sincronización.",
           placement: "right",
         },
         {
           id: "estadisticas",
           selector: '[data-tour="inicio-estadisticas"]',
           title: "Estadísticas y detalle",
-          body: "Gráficos de tendencia y listas útiles (stock bajo, caducidades, auditoría) para actuar rápido.",
+          body: "Gráficos y listas útiles (stock bajo, caducidades, auditoría) para actuar rápido.",
           placement: "top",
         },
       ];
     }
 
-    // Placeholder: se pueden añadir tours por pantalla aquí.
-    return [
-      {
-        id: "menu",
-        selector: "#app-sidebar",
-        title: "Navegación",
-        body: "Usa el menú lateral para cambiar de módulo. Pulsa 'Tutorial' cuando quieras una guía contextual.",
-        placement: "right",
-      },
-    ];
+    return base;
   }, [location.pathname]);
 
   useEffect(() => {
@@ -465,6 +481,17 @@ export default function AppLayout() {
             </div>
           </div>
         </header>
+
+        {/* Botón flotante: tutorial disponible en TODAS las pantallas (incluye móvil) */}
+        <button
+          type="button"
+          onClick={() => setTourOpen(true)}
+          aria-label="Abrir tutorial guiado"
+          className="fixed bottom-5 right-5 z-[80] inline-flex h-[52px] items-center justify-center gap-2 rounded-[18px] border border-[rgba(179,49,49,0.18)] bg-[linear-gradient(135deg,rgba(179,49,49,0.14),rgba(179,49,49,0.08))] px-4 text-[13px] font-extrabold text-[var(--color-brand-600)] shadow-[0_18px_40px_rgba(15,23,42,0.16)] backdrop-blur transition hover:bg-[linear-gradient(135deg,rgba(179,49,49,0.18),rgba(179,49,49,0.12))] max-[520px]:bottom-4 max-[520px]:right-4"
+        >
+          <BookOpen className="h-4 w-4" />
+          Tutorial
+        </button>
 
         <main
           className={[
