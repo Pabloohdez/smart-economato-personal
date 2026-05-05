@@ -138,27 +138,115 @@ export class PedidosService {
     }
 
     return this.db.transaction(async (client) => {
-      const { rows: ins } = await client.query(
-        `INSERT INTO pedidos (proveedor_id, usuario_id, estado, total) VALUES ($1, $2, 'PENDIENTE', $3) RETURNING id`,
-        [body.proveedorId, userId, body.total ?? 0],
+      // Si ya hay un pedido pendiente del mismo proveedor, lo reutilizamos
+      // para evitar múltiples pedidos duplicados. La suma se hace por producto
+      // (y por unidad si existe la columna `unidad`).
+      const { rows: existingRows } = await client.query(
+        `
+        SELECT id
+        FROM pedidos
+        WHERE proveedor_id = $1
+          AND estado IN ('PENDIENTE', 'INCOMPLETO')
+        ORDER BY fecha_creacion DESC
+        LIMIT 1
+        FOR UPDATE
+        `,
+        [body.proveedorId],
       );
-      const pedidoId = (ins[0] as { id: number }).id;
+
+      let pedidoId: number;
+      let mergedIntoExisting = false;
+
+      if (existingRows.length > 0) {
+        pedidoId = Number((existingRows[0] as { id: number }).id);
+        mergedIntoExisting = true;
+      } else {
+        const { rows: ins } = await client.query(
+          `INSERT INTO pedidos (proveedor_id, usuario_id, estado, total) VALUES ($1, $2, 'PENDIENTE', $3) RETURNING id`,
+          [body.proveedorId, userId, body.total ?? 0],
+        );
+        pedidoId = Number((ins[0] as { id: number }).id);
+      }
+
       if (body.items?.length) {
-        for (const item of body.items) {
+        for (const rawItem of body.items) {
+          const item = {
+            producto_id: String(rawItem.producto_id),
+            unidad: rawItem.unidad ?? 'ud',
+            cantidad: Number(rawItem.cantidad),
+            precio: Number(rawItem.precio),
+          };
+          if (!Number.isFinite(item.cantidad) || item.cantidad <= 0) continue;
+
           if (hasUnidadColumn) {
-            await client.query(
-              `INSERT INTO detalles_pedido (pedido_id, producto_id, unidad, cantidad, precio_unitario) VALUES ($1, $2, $3, $4, $5)`,
-              [pedidoId, item.producto_id, item.unidad ?? 'ud', item.cantidad, item.precio],
+            // Si ya existe línea de ese producto+unidad, acumulamos cantidad.
+            const { rows: det } = await client.query(
+              `
+              SELECT id, cantidad
+              FROM detalles_pedido
+              WHERE pedido_id = $1 AND producto_id = $2 AND unidad = $3
+              LIMIT 1
+              FOR UPDATE
+              `,
+              [pedidoId, item.producto_id, item.unidad],
             );
+
+            if (det.length > 0) {
+              const detId = Number((det[0] as any).id);
+              await client.query(
+                `UPDATE detalles_pedido
+                 SET cantidad = COALESCE(cantidad, 0) + $1,
+                     precio_unitario = $2
+                 WHERE id = $3`,
+                [item.cantidad, item.precio, detId],
+              );
+            } else {
+              await client.query(
+                `INSERT INTO detalles_pedido (pedido_id, producto_id, unidad, cantidad, precio_unitario) VALUES ($1, $2, $3, $4, $5)`,
+                [pedidoId, item.producto_id, item.unidad, item.cantidad, item.precio],
+              );
+            }
           } else {
-            await client.query(
-              `INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario) VALUES ($1, $2, $3, $4)`,
-              [pedidoId, item.producto_id, item.cantidad, item.precio],
+            // Esquema antiguo: sin unidad, se acumula por producto.
+            const { rows: det } = await client.query(
+              `
+              SELECT id, cantidad
+              FROM detalles_pedido
+              WHERE pedido_id = $1 AND producto_id = $2
+              LIMIT 1
+              FOR UPDATE
+              `,
+              [pedidoId, item.producto_id],
             );
+
+            if (det.length > 0) {
+              const detId = Number((det[0] as any).id);
+              await client.query(
+                `UPDATE detalles_pedido
+                 SET cantidad = COALESCE(cantidad, 0) + $1,
+                     precio_unitario = $2
+                 WHERE id = $3`,
+                [item.cantidad, item.precio, detId],
+              );
+            } else {
+              await client.query(
+                `INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario) VALUES ($1, $2, $3, $4)`,
+                [pedidoId, item.producto_id, item.cantidad, item.precio],
+              );
+            }
           }
         }
       }
-      return { id: pedidoId };
+
+      // Recalcular total real desde detalles (evita desajustes si se fusiona).
+      const { rows: totalRows } = await client.query(
+        `SELECT COALESCE(SUM(cantidad * precio_unitario), 0) as total FROM detalles_pedido WHERE pedido_id = $1`,
+        [pedidoId],
+      );
+      const total = Number((totalRows?.[0] as any)?.total ?? 0);
+      await client.query(`UPDATE pedidos SET total = $1 WHERE id = $2`, [total, pedidoId]);
+
+      return { id: pedidoId, merged: mergedIntoExisting };
     });
   }
 
