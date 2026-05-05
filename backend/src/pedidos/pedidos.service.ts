@@ -142,9 +142,10 @@ export class PedidosService {
       // si dos profesores crean a la vez, el segundo espera y fusiona.
       await client.query(`SELECT pg_advisory_xact_lock($1)`, [body.proveedorId]);
 
-      // Si ya hay un pedido pendiente del mismo proveedor, lo reutilizamos
-      // para evitar múltiples pedidos duplicados. La suma se hace por producto
-      // (y por unidad si existe la columna `unidad`).
+      // Si ya hay pedido(s) pendiente(s) del mismo proveedor:
+      // - Reutilizamos el más reciente
+      // - Si por cualquier motivo ya existen varios pendientes, los consolidamos en uno
+      //   para evitar duplicados visibles.
       const { rows: existingRows } = await client.query(
         `
         SELECT id
@@ -152,7 +153,6 @@ export class PedidosService {
         WHERE proveedor_id = $1
           AND estado IN ('PENDIENTE', 'INCOMPLETO')
         ORDER BY fecha_creacion DESC
-        LIMIT 1
         FOR UPDATE
         `,
         [body.proveedorId],
@@ -164,6 +164,83 @@ export class PedidosService {
       if (existingRows.length > 0) {
         pedidoId = Number((existingRows[0] as { id: number }).id);
         mergedIntoExisting = true;
+
+        // Consolidación: si hay más de un pendiente, volcamos sus líneas al pedidoId principal y los cancelamos.
+        if (existingRows.length > 1) {
+          const otherIds = existingRows.slice(1).map((r) => Number((r as any).id)).filter((n) => Number.isFinite(n));
+          for (const otherId of otherIds) {
+            // Traer líneas del pedido antiguo
+            const { rows: detRows } = await client.query(
+              hasUnidadColumn
+                ? `SELECT producto_id, unidad, cantidad, precio_unitario FROM detalles_pedido WHERE pedido_id = $1`
+                : `SELECT producto_id, cantidad, precio_unitario FROM detalles_pedido WHERE pedido_id = $1`,
+              [otherId],
+            );
+
+            for (const d of detRows as any[]) {
+              const producto_id = String(d.producto_id);
+              const unidad = hasUnidadColumn ? String(d.unidad ?? 'ud') : 'ud';
+              const cantidad = Number(d.cantidad ?? 0);
+              const precio = Number(d.precio_unitario ?? 0);
+              if (!Number.isFinite(cantidad) || cantidad <= 0) continue;
+
+              if (hasUnidadColumn) {
+                const { rows: det } = await client.query(
+                  `
+                  SELECT id
+                  FROM detalles_pedido
+                  WHERE pedido_id = $1 AND producto_id = $2 AND unidad = $3
+                  LIMIT 1
+                  FOR UPDATE
+                  `,
+                  [pedidoId, producto_id, unidad],
+                );
+                if (det.length > 0) {
+                  const detId = Number((det[0] as any).id);
+                  await client.query(
+                    `UPDATE detalles_pedido
+                     SET cantidad = COALESCE(cantidad, 0) + $1
+                     WHERE id = $2`,
+                    [cantidad, detId],
+                  );
+                } else {
+                  await client.query(
+                    `INSERT INTO detalles_pedido (pedido_id, producto_id, unidad, cantidad, precio_unitario) VALUES ($1, $2, $3, $4, $5)`,
+                    [pedidoId, producto_id, unidad, cantidad, precio],
+                  );
+                }
+              } else {
+                const { rows: det } = await client.query(
+                  `
+                  SELECT id
+                  FROM detalles_pedido
+                  WHERE pedido_id = $1 AND producto_id = $2
+                  LIMIT 1
+                  FOR UPDATE
+                  `,
+                  [pedidoId, producto_id],
+                );
+                if (det.length > 0) {
+                  const detId = Number((det[0] as any).id);
+                  await client.query(
+                    `UPDATE detalles_pedido
+                     SET cantidad = COALESCE(cantidad, 0) + $1
+                     WHERE id = $2`,
+                    [cantidad, detId],
+                  );
+                } else {
+                  await client.query(
+                    `INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario) VALUES ($1, $2, $3, $4)`,
+                    [pedidoId, producto_id, cantidad, precio],
+                  );
+                }
+              }
+            }
+
+            // Cancelar el pedido duplicado (dejamos trazabilidad sin borrarlo)
+            await client.query(`UPDATE pedidos SET estado = 'CANCELADO', total = 0 WHERE id = $1`, [otherId]);
+          }
+        }
       } else {
         const { rows: ins } = await client.query(
           `INSERT INTO pedidos (proveedor_id, usuario_id, estado, total) VALUES ($1, $2, 'PENDIENTE', $3) RETURNING id`,
