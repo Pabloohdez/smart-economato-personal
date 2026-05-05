@@ -34,7 +34,7 @@
     "framer-motion": "^12.38.0",
     "gridjs": "^6.2.0",
     "gridjs-react": "^6.1.1",
-    "lucide-react": "^1.8.0",
+    "lucide-react": "^1.14.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",
