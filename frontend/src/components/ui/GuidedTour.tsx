@@ -29,6 +29,23 @@ function getEl(selector: string): HTMLElement | null {
   }
 }
 
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+  } catch {
+    return false;
+  }
+}
+
+function isRectMostlyInViewport(rect: DOMRect, margin = 16): boolean {
+  const topOk = rect.top >= margin;
+  const bottomOk = rect.bottom <= window.innerHeight - margin;
+  const leftOk = rect.left >= margin;
+  const rightOk = rect.right <= window.innerWidth - margin;
+  return topOk && bottomOk && leftOk && rightOk;
+}
+
 export default function GuidedTour({ open, steps, initialStepId, onClose }: GuidedTourProps) {
   const initialIndex = useMemo(() => {
     if (!initialStepId) return 0;
@@ -56,12 +73,27 @@ export default function GuidedTour({ open, steps, initialStepId, onClose }: Guid
         setTargetRect(null);
         return;
       }
-      setTargetRect(el.getBoundingClientRect());
+
+      // 1) Intentar asegurar que el objetivo está visible (autoscroll).
+      // Usamos "center" para evitar que el tooltip quede fuera de pantalla.
       try {
-        el.scrollIntoView({ block: "nearest", inline: "nearest" });
+        const rectNow = el.getBoundingClientRect();
+        if (!isRectMostlyInViewport(rectNow, 28)) {
+          el.scrollIntoView({
+            block: "center",
+            inline: "nearest",
+            behavior: prefersReducedMotion() ? "auto" : "smooth",
+          });
+        }
       } catch {
         // noop
       }
+
+      // 2) Medir después (en el siguiente frame) para que el spotlight quede alineado tras el scroll.
+      requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        setTargetRect(rect);
+      });
     };
 
     update();
