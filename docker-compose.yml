@@ -16,7 +16,9 @@ services:
     environment:
       CHOKIDAR_USEPOLLING: "true"
       CHOKIDAR_INTERVAL: "300"
-      VITE_API_URL: "http://localhost:3000/api"
+      # Importante: mantenerlo same-origin para que las cookies HttpOnly viajen sin problemas.
+      # Vite hará proxy de /api -> http://api:3000 (ver frontend/vite.config.js).
+      VITE_API_URL: "/api"
     volumes:
       - ./frontend:/app
       - /app/node_modules
