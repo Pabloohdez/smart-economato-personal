@@ -209,10 +209,10 @@ const PedidoItemRow = memo(function PedidoItemRow({
       <TableCell className="px-3 py-3 text-center overflow-hidden">
         {!completado ? (
           <div className="flex w-full max-w-full min-w-0 flex-wrap items-center justify-center gap-2.5">
-            <div className="inline-flex items-center rounded-[14px] border border-slate-200 bg-slate-50 p-1.5 shadow-sm">
+            <div className="inline-flex items-center rounded-[14px] border border-black/30 bg-slate-50 p-1.5 shadow-sm">
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-black/40 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
                 aria-label={`Reducir cantidad de ${it.producto_nombre ?? "producto"}`}
                 onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) - step, maxRecibir, step)}
               >
@@ -225,12 +225,12 @@ const PedidoItemRow = memo(function PedidoItemRow({
                 step={step}
                 value={qtyVerif}
                 onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
-                className="mx-1 h-10 w-[92px] rounded-[12px] border border-slate-200 bg-white px-2 text-center text-[15px] font-extrabold text-slate-900 [appearance:textfield] shadow-sm"
+                className="mx-1 h-10 w-[92px] rounded-[12px] border border-black/35 bg-white px-2 text-center text-[15px] font-extrabold text-slate-900 [appearance:textfield] shadow-sm"
                 inputMode="numeric"
               />
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-black/40 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
                 aria-label={`Aumentar cantidad de ${it.producto_nombre ?? "producto"}`}
                 onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) + step, maxRecibir, step)}
               >
@@ -241,7 +241,7 @@ const PedidoItemRow = memo(function PedidoItemRow({
             <div className="inline-flex shrink-0 items-center gap-2">
               <button
                 type="button"
-                className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] border border-black/35 text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
                 aria-label={`Usar lectura de báscula para ${it.producto_nombre ?? "producto"}`}
                 title="Usar lectura de báscula"
                 onClick={() => handlers.onUseScale(String(it.id), unidad, maxRecibir, step)}
@@ -252,7 +252,7 @@ const PedidoItemRow = memo(function PedidoItemRow({
 
               <button
                 type="button"
-                className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)]"
+                className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] border border-black/35 text-[var(--color-text-strong)]"
                 aria-label={`Gestionar lotes de ${it.producto_nombre ?? "producto"}`}
                 title="Lotes (caducidad)"
                 onClick={() => handlers.onOpenLotes(String(it.id), unidad, maxRecibir)}
@@ -1088,7 +1088,7 @@ export default function Recepcion() {
                 </div>
               <button
                 type="button"
-                className="w-11 h-11 min-w-11 rounded-[14px] border border-slate-200 bg-white text-slate-600 inline-flex items-center justify-center cursor-pointer shadow-sm hover:bg-slate-50 active:scale-[0.98]"
+                className="w-11 h-11 min-w-11 rounded-[14px] border border-black/30 bg-white text-slate-700 inline-flex items-center justify-center cursor-pointer shadow-sm hover:bg-slate-50 active:scale-[0.98]"
                 aria-label="Cerrar importacion de pedidos"
                 onClick={cerrarDrawerPedidos}
               >
