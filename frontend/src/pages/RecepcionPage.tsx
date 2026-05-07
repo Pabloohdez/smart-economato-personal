@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { memo, useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -59,6 +59,207 @@ function normalizarUnidad(raw?: string) {
   if (u === "litro" || u === "litros" || u === "l") return "l";
   return u;
 }
+
+type PedidoVerifItem = Pick<PedidoItem, "id"> & {
+  producto_nombre?: string | null;
+  unidad?: string | null;
+  cantidad?: number | string | null;
+  cantidad_recibida?: number | string | null;
+};
+
+type QtyHandlers = {
+  onSetQty: (id: string, next: number, maxRecibir: number, step: number) => void;
+  onUseScale: (id: string, unidad: string, maxRecibir: number, step: number) => void;
+  onOpenLotes: (id: string, unidad: string, maxRecibir: number) => void;
+};
+
+const PedidoItemCard = memo(function PedidoItemCard({
+  it,
+  completado,
+  qtyVerif,
+  maxRecibir,
+  unidad,
+  step,
+  scaleConnected,
+  scaleWeightKg,
+  handlers,
+}: {
+  it: PedidoVerifItem;
+  completado: boolean;
+  qtyVerif: number;
+  maxRecibir: number;
+  unidad: string;
+  step: number;
+  scaleConnected: boolean;
+  scaleWeightKg: number | null;
+  handlers: QtyHandlers;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="truncate text-[14px] font-extrabold text-slate-900">{it.producto_nombre}</div>
+          <div className="mt-1 text-[12px] text-slate-500">
+            <span className="font-semibold text-slate-700">{unidad}</span> · Pedida{" "}
+            <span className="font-semibold text-slate-700">{String(it.cantidad ?? 0)}</span> · Recibida{" "}
+            <span className="font-semibold text-slate-700">{String(it.cantidad_recibida ?? 0)}</span>
+          </div>
+        </div>
+
+        {!completado ? (
+          <div className="inline-flex items-center gap-2">
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label={`Usar lectura de báscula para ${it.producto_nombre ?? "producto"}`}
+              title="Usar lectura de báscula"
+              onClick={() => handlers.onUseScale(String(it.id), unidad, maxRecibir, step)}
+              disabled={!scaleConnected || scaleWeightKg == null || step === 1}
+            >
+              <Scale className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)]"
+              aria-label={`Gestionar lotes de ${it.producto_nombre ?? "producto"}`}
+              title="Lotes (caducidad)"
+              onClick={() => handlers.onOpenLotes(String(it.id), unidad, maxRecibir)}
+            >
+              <CalendarDays className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-3">
+        {!completado ? (
+          <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2">
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
+              aria-label={`Reducir cantidad de ${it.producto_nombre ?? "producto"}`}
+              onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) - step, maxRecibir, step)}
+            >
+              -
+            </button>
+            <input
+              type="number"
+              min={0}
+              max={maxRecibir}
+              step={step}
+              value={qtyVerif}
+              onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
+              className="min-h-11 w-full rounded-[12px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-3 py-2 text-center font-semibold [appearance:textfield]"
+              inputMode="numeric"
+            />
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
+              aria-label={`Aumentar cantidad de ${it.producto_nombre ?? "producto"}`}
+              onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) + step, maxRecibir, step)}
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <div className="text-[13px] font-semibold text-slate-500">Pedido completado</div>
+        )}
+
+        <div className="mt-2 text-[12px] text-slate-500">
+          Máx. recibir ahora: <span className="font-semibold text-slate-700">{maxRecibir}</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const PedidoItemRow = memo(function PedidoItemRow({
+  it,
+  completado,
+  qtyVerif,
+  maxRecibir,
+  unidad,
+  step,
+  scaleConnected,
+  scaleWeightKg,
+  handlers,
+}: {
+  it: PedidoVerifItem;
+  completado: boolean;
+  qtyVerif: number;
+  maxRecibir: number;
+  unidad: string;
+  step: number;
+  scaleConnected: boolean;
+  scaleWeightKg: number | null;
+  handlers: QtyHandlers;
+}) {
+  return (
+    <TableRow key={String(it.id)} className="bo-table-row">
+      <TableCell className="max-w-[360px] truncate font-semibold text-slate-900">{it.producto_nombre}</TableCell>
+      <TableCell className="whitespace-nowrap text-slate-600">{unidad}</TableCell>
+      <TableCell className="text-slate-700">{String(it.cantidad ?? 0)}</TableCell>
+      <TableCell className="text-slate-700">{String(it.cantidad_recibida ?? 0)}</TableCell>
+      <TableCell className="text-center">
+        {!completado ? (
+          <div className="inline-flex w-full flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[22px] font-bold leading-none"
+              aria-label={`Reducir cantidad de ${it.producto_nombre ?? "producto"}`}
+              onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) - step, maxRecibir, step)}
+            >
+              -
+            </button>
+
+            <input
+              type="number"
+              min={0}
+              max={maxRecibir}
+              step={step}
+              value={qtyVerif}
+              onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
+              className="w-[96px] min-h-11 rounded-[12px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-2.5 py-2 text-center font-semibold [appearance:textfield]"
+              inputMode="numeric"
+            />
+
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label={`Usar lectura de báscula para ${it.producto_nombre ?? "producto"}`}
+              title="Usar lectura de báscula"
+              onClick={() => handlers.onUseScale(String(it.id), unidad, maxRecibir, step)}
+              disabled={!scaleConnected || scaleWeightKg == null || step === 1}
+            >
+              <Scale className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[var(--color-text-strong)]"
+              aria-label={`Gestionar lotes de ${it.producto_nombre ?? "producto"}`}
+              title="Lotes (caducidad)"
+              onClick={() => handlers.onOpenLotes(String(it.id), unidad, maxRecibir)}
+            >
+              <CalendarDays className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[22px] font-bold leading-none"
+              aria-label={`Aumentar cantidad de ${it.producto_nombre ?? "producto"}`}
+              onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) + step, maxRecibir, step)}
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <span className="text-slate-400">—</span>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+});
 
 export default function Recepcion() {
   const queryClient = useQueryClient();
@@ -292,10 +493,14 @@ export default function Recepcion() {
     setResultadosOpen(false);
   }
 
-  function actualizarCantidadVerificada(detalleId: string, siguiente: number, maximo: number) {
-    const safe = Math.max(0, Math.min(maximo, siguiente));
-    setVerifQty((prev) => ({ ...prev, [detalleId]: safe }));
-  }
+  const actualizarCantidadVerificada = useCallback(
+    (detalleId: string, siguiente: number, maximo: number, step?: number) => {
+      let safe = Math.max(0, Math.min(maximo, siguiente));
+      if (step === 1) safe = Math.round(safe);
+      setVerifQty((prev) => (prev[detalleId] === safe ? prev : { ...prev, [detalleId]: safe }));
+    },
+    [],
+  );
 
   function abrirLotes(detalleId: string, unidad: string | undefined, maximo: number) {
     setLotesDetalleId(detalleId);
@@ -877,6 +1082,11 @@ export default function Recepcion() {
                 {pedidosPendientes.map((ped) => {
                   const items = Array.isArray(ped.items) ? ped.items : [];
                   const completado = ped.estado.toUpperCase() === "COMPLETADO";
+                  const handlers: QtyHandlers = {
+                    onSetQty: (id, next, maxRecibir, step) => actualizarCantidadVerificada(id, next, maxRecibir, step),
+                    onUseScale: (id, unidad, maxRecibir) => capturarBasculaParaDetalle(id, unidad, maxRecibir),
+                    onOpenLotes: (id, unidad, maxRecibir) => abrirLotes(id, unidad, maxRecibir),
+                  };
 
                   return (
                     <div key={String(ped.id)} className="border border-[var(--color-border-default)] rounded-[14px] p-4 bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] flex flex-col justify-between">
@@ -905,118 +1115,29 @@ export default function Recepcion() {
                             {/* Móvil/Tablet (incluye iPad): cards */}
                             <div className="hidden max-[1366px]:block">
                               <div className="mt-2.5 grid gap-3">
-                                {items.map((it) => {
-                                  const qtyVerif = verifQty[it.id] ?? 0;
+                                {items.map((raw) => {
+                                  const it = raw as unknown as PedidoVerifItem;
+                                  const qtyVerif = Number(verifQty[it.id] ?? 0);
                                   const maxRecibir = Math.max(
                                     0,
                                     (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0),
                                   );
-                                  const unidad = (it.unidad ?? "ud") as string;
+                                  const unidad = normalizarUnidad(it.unidad ?? "ud");
                                   const step = stepDeUnidad(unidad);
 
                                   return (
-                                    <div
+                                    <PedidoItemCard
                                       key={`ped-item-m-${String(ped.id)}-${String(it.id)}`}
-                                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
-                                    >
-                                      <div className="flex items-start justify-between gap-3">
-                                        <div className="min-w-0">
-                                          <div className="truncate text-[14px] font-extrabold text-slate-900">
-                                            {it.producto_nombre}
-                                          </div>
-                                          <div className="mt-1 text-[12px] text-slate-500">
-                                            <span className="font-semibold text-slate-700">{unidad}</span>{" "}
-                                            · Pedida <span className="font-semibold text-slate-700">{it.cantidad}</span>{" "}
-                                            · Recibida{" "}
-                                            <span className="font-semibold text-slate-700">
-                                              {it.cantidad_recibida || 0}
-                                            </span>
-                                          </div>
-                                        </div>
-
-                                        {!completado ? (
-                                          <div className="inline-flex items-center gap-2">
-                                            <button
-                                              type="button"
-                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
-                                              aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
-                                              title="Usar lectura de báscula"
-                                              onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
-                                              disabled={!scale.connected || scale.weightKg == null || step === 1}
-                                            >
-                                              <Scale className="h-4 w-4" />
-                                            </button>
-                                            <button
-                                              type="button"
-                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)]"
-                                              aria-label={`Gestionar lotes de ${it.producto_nombre}`}
-                                              title="Lotes (caducidad)"
-                                              onClick={() => abrirLotes(String(it.id), unidad, maxRecibir)}
-                                            >
-                                              <CalendarDays className="h-4 w-4" />
-                                            </button>
-                                          </div>
-                                        ) : null}
-                                      </div>
-
-                                      <div className="mt-3">
-                                        {!completado ? (
-                                          <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2">
-                                            <button
-                                              type="button"
-                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
-                                              aria-label={`Reducir cantidad de ${it.producto_nombre}`}
-                                              onClick={() =>
-                                                actualizarCantidadVerificada(
-                                                  String(it.id),
-                                                  Number(qtyVerif || 0) - step,
-                                                  maxRecibir,
-                                                )
-                                              }
-                                            >
-                                              -
-                                            </button>
-                                            <input
-                                              type="number"
-                                              min={0}
-                                              max={maxRecibir}
-                                              step={step}
-                                              value={qtyVerif}
-                                              onChange={(e) =>
-                                                actualizarCantidadVerificada(
-                                                  String(it.id),
-                                                  Number(e.target.value || 0),
-                                                  maxRecibir,
-                                                )
-                                              }
-                                              className="min-h-11 w-full rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-3 py-2 text-center font-semibold [appearance:textfield]"
-                                              inputMode="numeric"
-                                            />
-                                            <button
-                                              type="button"
-                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
-                                              aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
-                                              onClick={() =>
-                                                actualizarCantidadVerificada(
-                                                  String(it.id),
-                                                  Number(qtyVerif || 0) + step,
-                                                  maxRecibir,
-                                                )
-                                              }
-                                            >
-                                              +
-                                            </button>
-                                          </div>
-                                        ) : (
-                                          <div className="text-[13px] font-semibold text-slate-500">Pedido completado</div>
-                                        )}
-
-                                        <div className="mt-2 text-[12px] text-slate-500">
-                                          Máx. recibir ahora:{" "}
-                                          <span className="font-semibold text-slate-700">{maxRecibir}</span>
-                                        </div>
-                                      </div>
-                                    </div>
+                                      it={it}
+                                      completado={completado}
+                                      qtyVerif={qtyVerif}
+                                      maxRecibir={maxRecibir}
+                                      unidad={unidad}
+                                      step={step}
+                                      scaleConnected={scale.connected}
+                                      scaleWeightKg={scale.weightKg}
+                                      handlers={handlers}
+                                    />
                                   );
                                 })}
                               </div>
@@ -1027,7 +1148,7 @@ export default function Recepcion() {
                               <div className="w-full overflow-x-auto">
                                 <Table className="mt-2.5 min-w-[720px] overflow-hidden rounded-[20px] border border-slate-100 bg-white text-[12px]">
                                   <TableHeader>
-                                    <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                                    <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80 sticky top-0 z-10">
                                       <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Producto</TableHead>
                                       <TableHead className="whitespace-nowrap min-w-[90px]">Unidad</TableHead>
                                       <TableHead className="whitespace-nowrap min-w-[90px]">Pedida</TableHead>
@@ -1036,92 +1157,28 @@ export default function Recepcion() {
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
-                                    {items.map((it) => {
-                                      const qtyVerif = verifQty[it.id] ?? 0;
+                                    {items.map((raw) => {
+                                      const it = raw as unknown as PedidoVerifItem;
+                                      const qtyVerif = Number(verifQty[it.id] ?? 0);
                                       const maxRecibir = Math.max(
                                         0,
                                         (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0),
                                       );
-                                      const unidad = (it.unidad ?? "ud") as string;
+                                      const unidad = normalizarUnidad(it.unidad ?? "ud");
                                       const step = stepDeUnidad(unidad);
                                       return (
-                                        <TableRow key={String(it.id)} className="bo-table-row">
-                                          <TableCell className="max-w-[320px] truncate">{it.producto_nombre}</TableCell>
-                                          <TableCell className="whitespace-nowrap">{unidad}</TableCell>
-                                          <TableCell>{it.cantidad}</TableCell>
-                                          <TableCell>{it.cantidad_recibida || 0}</TableCell>
-                                          <TableCell className="text-center">
-                                            {!completado ? (
-                                              <div className="inline-flex w-full flex-wrap items-center justify-center gap-2">
-                                                <button
-                                                  type="button"
-                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
-                                                  aria-label={`Reducir cantidad de ${it.producto_nombre}`}
-                                                  onClick={() =>
-                                                    actualizarCantidadVerificada(
-                                                      String(it.id),
-                                                      Number(qtyVerif || 0) - step,
-                                                      maxRecibir,
-                                                    )
-                                                  }
-                                                >
-                                                  -
-                                                </button>
-                                                <input
-                                                  type="number"
-                                                  min={0}
-                                                  max={maxRecibir}
-                                                  step={step}
-                                                  value={qtyVerif}
-                                                  onChange={(e) =>
-                                                    actualizarCantidadVerificada(
-                                                      String(it.id),
-                                                      Number(e.target.value || 0),
-                                                      maxRecibir,
-                                                    )
-                                                  }
-                                                  className="w-[84px] min-h-11 rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-2.5 py-2 text-center font-semibold [appearance:textfield]"
-                                                  inputMode="numeric"
-                                                />
-                                                <button
-                                                  type="button"
-                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
-                                                  aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
-                                                  title="Usar lectura de báscula"
-                                                  onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
-                                                  disabled={!scale.connected || scale.weightKg == null || step === 1}
-                                                >
-                                                  <Scale className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)]"
-                                                  aria-label={`Gestionar lotes de ${it.producto_nombre}`}
-                                                  title="Lotes (caducidad)"
-                                                  onClick={() => abrirLotes(String(it.id), unidad, maxRecibir)}
-                                                >
-                                                  <CalendarDays className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
-                                                  aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
-                                                  onClick={() =>
-                                                    actualizarCantidadVerificada(
-                                                      String(it.id),
-                                                      Number(qtyVerif || 0) + step,
-                                                      maxRecibir,
-                                                    )
-                                                  }
-                                                >
-                                                  +
-                                                </button>
-                                              </div>
-                                            ) : (
-                                              "—"
-                                            )}
-                                          </TableCell>
-                                        </TableRow>
+                                        <PedidoItemRow
+                                          key={String(it.id)}
+                                          it={it}
+                                          completado={completado}
+                                          qtyVerif={qtyVerif}
+                                          maxRecibir={maxRecibir}
+                                          unidad={unidad}
+                                          step={step}
+                                          scaleConnected={scale.connected}
+                                          scaleWeightKg={scale.weightKg}
+                                          handlers={handlers}
+                                        />
                                       );
                                     })}
                                   </TableBody>
