@@ -35,14 +35,14 @@ export class LoginController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'strict' : 'lax',
-      path: '/api',
+      path: '/',
       maxAge: 1000 * 60 * 60 * 8, // coherente con JWT_EXPIRES_IN por defecto (8h)
     });
     res.cookie('refreshToken', session.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'strict' : 'lax',
-      path: '/api/login/refresh',
+      path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 30, // coherente con 30d por defecto
     });
 
@@ -78,14 +78,14 @@ export class LoginController {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'strict' : 'lax',
-      path: '/api',
+      path: '/',
       maxAge: 1000 * 60 * 60 * 8,
     });
     res.cookie('refreshToken', session.refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'strict' : 'lax',
-      path: '/api/login/refresh',
+      path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 30,
     });
 
@@ -104,8 +104,8 @@ export class LoginController {
     if (refreshToken) {
       await this.authService.revokeRefreshToken(refreshToken);
     }
-    res.clearCookie('accessToken', { path: '/api' });
-    res.clearCookie('refreshToken', { path: '/api/login/refresh' });
+    res.clearCookie('accessToken', { path: '/' });
+    res.clearCookie('refreshToken', { path: '/' });
     return { ok: true };
   }
 
