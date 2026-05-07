@@ -1070,7 +1070,7 @@ export default function Recepcion() {
         >
         <div className="flex h-[100dvh] w-full items-center justify-center p-6 max-[640px]:p-4">
           <motion.aside
-            className="box-border m-auto w-[min(1040px,calc(100vw-3rem))] max-h-[calc(100dvh-3rem)] bg-white border border-slate-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[22px] overflow-hidden overflow-x-clip flex flex-col"
+            className="box-border m-auto w-[min(1040px,calc(100vw-3rem))] max-h-[calc(100dvh-8rem)] bg-white border border-slate-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[22px] overflow-hidden overflow-x-clip flex flex-col"
             onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.98, opacity: 0, y: 12 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
