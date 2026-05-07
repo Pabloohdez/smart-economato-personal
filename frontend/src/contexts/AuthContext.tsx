@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
 import type { UsuarioActivo } from "../types";
-import { getStoredUser } from "../services/sessionService";
+import { getStoredUser, saveStoredUser } from "../services/sessionService";
 
 type AuthContextType = {
   user: UsuarioActivo | null;
@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UsuarioActivo | null>(loadUser);
 
   const updateUser = useCallback((updated: UsuarioActivo) => {
-    localStorage.setItem("usuarioActivo", JSON.stringify(updated));
+    saveStoredUser(updated as unknown as Record<string, unknown>);
     setUser(updated);
   }, []);
 

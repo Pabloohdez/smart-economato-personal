@@ -25,6 +25,7 @@ import { Toaster } from "./components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { queryClient } from "./lib/queryClient";
 import ErrorPage from "./pages/ErrorPage";
+import { useIdleLogout } from "./hooks/useIdleLogout";
 
 const IngresarProductoPage = lazy(() => import("./pages/IngresarProductoPage"));
 const CrearUsuarioPage = lazy(() => import("./pages/CrearUsuarioPage"));
@@ -35,6 +36,8 @@ const TutorialPage = lazy(() => import("./pages/TutorialPage"));
 function AppRoutes() {
   const location = useLocation();
   const routeKey = `${location.pathname}${location.search}${location.hash}`;
+
+  useIdleLogout();
 
   return (
     <RouteErrorBoundary resetKey={routeKey}>
