@@ -206,9 +206,9 @@ const PedidoItemRow = memo(function PedidoItemRow({
       <TableCell className="px-4 py-3 whitespace-nowrap text-slate-600">{unidad}</TableCell>
       <TableCell className="px-4 py-3 text-slate-700">{String(it.cantidad ?? 0)}</TableCell>
       <TableCell className="px-4 py-3 text-slate-700">{String(it.cantidad_recibida ?? 0)}</TableCell>
-      <TableCell className="text-center">
+      <TableCell className="px-3 py-3 text-center overflow-hidden">
         {!completado ? (
-          <div className="flex items-center justify-center gap-2.5">
+          <div className="flex w-full max-w-full min-w-0 flex-wrap items-center justify-center gap-2.5">
             <div className="inline-flex items-center rounded-[14px] border border-slate-200 bg-slate-50 p-1.5 shadow-sm">
               <button
                 type="button"
@@ -225,7 +225,7 @@ const PedidoItemRow = memo(function PedidoItemRow({
                 step={step}
                 value={qtyVerif}
                 onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
-                className="mx-1 h-10 w-[104px] rounded-[12px] border border-slate-200 bg-white px-2 text-center text-[15px] font-extrabold text-slate-900 [appearance:textfield] shadow-sm"
+                className="mx-1 h-10 w-[92px] rounded-[12px] border border-slate-200 bg-white px-2 text-center text-[15px] font-extrabold text-slate-900 [appearance:textfield] shadow-sm"
                 inputMode="numeric"
               />
               <button
@@ -238,26 +238,28 @@ const PedidoItemRow = memo(function PedidoItemRow({
               </button>
             </div>
 
-            <button
-              type="button"
-              className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
-              aria-label={`Usar lectura de báscula para ${it.producto_nombre ?? "producto"}`}
-              title="Usar lectura de báscula"
-              onClick={() => handlers.onUseScale(String(it.id), unidad, maxRecibir, step)}
-              disabled={!scaleConnected || scaleWeightKg == null || step === 1}
-            >
-              <Scale className="h-4 w-4" />
-            </button>
+            <div className="inline-flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label={`Usar lectura de báscula para ${it.producto_nombre ?? "producto"}`}
+                title="Usar lectura de báscula"
+                onClick={() => handlers.onUseScale(String(it.id), unidad, maxRecibir, step)}
+                disabled={!scaleConnected || scaleWeightKg == null || step === 1}
+              >
+                <Scale className="h-4 w-4" />
+              </button>
 
-            <button
-              type="button"
-              className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)]"
-              aria-label={`Gestionar lotes de ${it.producto_nombre ?? "producto"}`}
-              title="Lotes (caducidad)"
-              onClick={() => handlers.onOpenLotes(String(it.id), unidad, maxRecibir)}
-            >
-              <CalendarDays className="h-4 w-4" />
-            </button>
+              <button
+                type="button"
+                className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)]"
+                aria-label={`Gestionar lotes de ${it.producto_nombre ?? "producto"}`}
+                title="Lotes (caducidad)"
+                onClick={() => handlers.onOpenLotes(String(it.id), unidad, maxRecibir)}
+              >
+                <CalendarDays className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         ) : (
           <span className="text-slate-400">—</span>
@@ -291,11 +293,39 @@ export default function Recepcion() {
 
   const [modalPedidosOpen, setModalPedidosOpen] = useState(false);
 
+  // Cuando el modal está abierto, la página debe quedar estática.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!modalPedidosOpen) return;
+
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyPaddingRight = document.body.style.paddingRight;
+
+    // Compensa el “salto” de layout al desaparecer la scrollbar.
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.paddingRight = prevBodyPaddingRight;
+    };
+  }, [modalPedidosOpen]);
+
   const pedidosPendientesQuery = useQuery<Pedido[]>({
     queryKey: queryKeys.pedidosPendientes,
     queryFn: getPedidosPendientes,
     enabled: modalPedidosOpen,
-    refetchInterval: modalPedidosOpen ? 30_000 : false,
+    // Evita “recargas” constantes del modal: refresco manual y en momentos controlados.
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 60_000,
   });
 
   const productos = productosQuery.data ?? [];
@@ -1032,15 +1062,15 @@ export default function Recepcion() {
       {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
         <motion.div
-          className="fixed inset-0 z-[1000] overflow-y-auto overflow-x-hidden bg-[rgba(11,18,32,0.42)] backdrop-blur-[4px]"
+          className="fixed inset-0 z-[1000] w-[100vw] max-w-[100vw] overflow-hidden overflow-x-clip bg-[rgba(11,18,32,0.42)] backdrop-blur-[4px]"
           onClick={cerrarDrawerPedidos}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.18 }}
         >
-        <div className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-6">
+        <div className="flex h-[100dvh] w-full items-center justify-center p-6 max-[640px]:p-4">
           <motion.aside
-            className="w-full max-w-[1040px] max-h-[calc(100dvh-3rem)] bg-white border border-slate-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[22px] overflow-hidden overflow-x-hidden flex flex-col"
+            className="box-border m-auto w-[min(1040px,calc(100vw-3rem))] max-h-[calc(100dvh-3rem)] bg-white border border-slate-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[22px] overflow-hidden overflow-x-clip flex flex-col"
             onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.98, opacity: 0, y: 12 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -1069,7 +1099,7 @@ export default function Recepcion() {
 
             <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden pr-1 px-6 pb-6 max-[768px]:px-4 max-[768px]:pb-4 [scrollbar-gutter:stable] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_100%)]">
 
-            {pedidosPendientesQuery.isLoading || pedidosPendientesQuery.isFetching ? (
+            {pedidosPendientesQuery.isLoading ? (
               <div className="flex-1 flex items-center justify-center">
                 <Spinner label="Cargando pedidos pendientes..." />
               </div>
@@ -1092,6 +1122,11 @@ export default function Recepcion() {
               </div>
             ) : (
               <div className="mt-5 flex-1 flex flex-col gap-[16px]">
+                {pedidosPendientesQuery.isFetching ? (
+                  <div className="mb-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-[12px] font-semibold text-slate-500">
+                    Actualizando pedidos…
+                  </div>
+                ) : null}
                 {pedidosPendientes.map((ped) => {
                   const items = Array.isArray(ped.items) ? ped.items : [];
                   const completado = ped.estado.toUpperCase() === "COMPLETADO";
@@ -1165,15 +1200,15 @@ export default function Recepcion() {
 
                             {/* Desktop grande: tabla */}
                             <div className="max-[1366px]:hidden">
-                              <div className="w-full max-w-full overflow-x-auto rounded-[18px] border border-slate-200 bg-white">
-                                <Table className="w-full min-w-[760px] text-[12px]">
+                              <div className="w-full max-w-full overflow-x-hidden rounded-[18px] border border-slate-200 bg-white">
+                                <Table className="w-full table-fixed text-[12px]">
                                   <TableHeader>
                                     <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80 sticky top-0 z-10">
-                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[260px] text-slate-600">Producto</TableHead>
-                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[80px] text-slate-600">Unidad</TableHead>
-                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[80px] text-slate-600">Pedida</TableHead>
-                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[140px] text-slate-600">Recibida (antes)</TableHead>
-                                      <TableHead className="px-4 py-3 whitespace-nowrap text-center min-w-[360px] text-slate-600">A recibir ahora</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap text-slate-600 w-[34%]">Producto</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap text-slate-600 w-[10%]">Unidad</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap text-slate-600 w-[10%]">Pedida</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap text-slate-600 w-[16%]">Recibida (antes)</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap text-center text-slate-600 w-[30%]">A recibir ahora</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>

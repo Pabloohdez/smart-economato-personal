@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScaleSerial, type ScaleWeight } from "../lib/scale/scaleSerial";
 
 type UseScaleSerialState = {
@@ -29,14 +29,35 @@ export function useScaleSerial(options?: { baudRate?: number }) {
   });
 
   useEffect(() => {
+    let rafId: number | null = null;
+    const pendingRef = { current: null as ScaleWeight | null };
+    const lastAppliedRef = { current: { kg: null as number | null, rawLine: null as string | null } };
+
     const unsub = scale.subscribe((w: ScaleWeight) => {
-      setState((prev) => ({
-        ...prev,
-        weightKg: w.kg,
-        rawLine: w.rawLine,
-      }));
+      pendingRef.current = w;
+      if (rafId != null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        const next = pendingRef.current;
+        if (!next) return;
+        pendingRef.current = null;
+
+        // Evita renders si no cambia nada.
+        if (lastAppliedRef.current.kg === next.kg && lastAppliedRef.current.rawLine === next.rawLine) {
+          return;
+        }
+        lastAppliedRef.current = { kg: next.kg, rawLine: next.rawLine };
+
+        setState((prev) => {
+          if (prev.weightKg === next.kg && prev.rawLine === next.rawLine) return prev;
+          return { ...prev, weightKg: next.kg, rawLine: next.rawLine };
+        });
+      });
     });
-    return () => unsub();
+    return () => {
+      if (rafId != null) window.cancelAnimationFrame(rafId);
+      unsub();
+    };
   }, [scale]);
 
   async function connect() {
