@@ -1,4 +1,4 @@
-import { clearSession, getRefreshToken, getStoredUser, getToken, saveSession } from "./sessionService";
+import { clearSession, getStoredUser, saveSession } from "./sessionService";
 import {
   enqueueOfflineRequest,
   getOfflineQueue,
@@ -121,10 +121,9 @@ function extractApiErrorMessage(data: unknown, status: number): string {
 }
 
 async function refreshAccessToken(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
   const user = getStoredUser();
 
-  if (!refreshToken || !user) {
+  if (!user) {
     return false;
   }
 
@@ -138,11 +137,11 @@ async function refreshAccessToken(): Promise<boolean> {
           method: "POST",
           cache: "no-store",
           signal,
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
             "X-Requested-With": "XMLHttpRequest",
           },
-          body: JSON.stringify({ refreshToken }),
         });
       } catch (error) {
         if (isAbortError(error)) {
@@ -158,12 +157,12 @@ async function refreshAccessToken(): Promise<boolean> {
       const text = await res.text();
       const data = text ? JSON.parse(text) : null;
 
-      if (!res.ok || !data?.success || !data?.data?.token || !data?.data?.user) {
+      if (!res.ok || !data?.success || !data?.data?.user) {
         clearSession();
         return false;
       }
 
-      saveSession(data.data.token, data.data.user, data.data.refreshToken);
+      saveSession(data.data.user);
       return true;
     })().finally(() => {
       refreshPromise = null;
@@ -179,7 +178,6 @@ async function executeApiRequest<T>(
   retryOnUnauthorized = true,
 ): Promise<T> {
   const url = `${API_URL}${path}`;
-  const token = getToken();
   const optionHeaders = (options.headers ?? {}) as HeadersInit;
   const method = String(options.method ?? "GET").toUpperCase();
   const { signal: callerSignal, cache: callerCache, ...requestOptions } = options;
@@ -191,9 +189,9 @@ async function executeApiRequest<T>(
       ...requestOptions,
       cache: callerCache ?? (method === "GET" ? "no-store" : undefined),
       signal,
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...optionHeaders,
       },
     });

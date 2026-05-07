@@ -18,6 +18,7 @@ export class AuthService {
   private readonly refreshSecret: string;
   private readonly expiresIn: SignOptions['expiresIn'];
   private readonly refreshExpiresIn: SignOptions['expiresIn'];
+  private readonly maxSessionAgeMs: number;
 
   private static readonly INSECURE_DEFAULTS = [
     'cambia_esto_por_un_secreto_largo_y_aleatorio',
@@ -42,6 +43,7 @@ export class AuthService {
     this.refreshSecret = process.env.JWT_REFRESH_SECRET || `${secret}-refresh`;
     this.expiresIn = (process.env.JWT_EXPIRES_IN || '8h') as SignOptions['expiresIn'];
     this.refreshExpiresIn = (process.env.JWT_REFRESH_EXPIRES_IN || '30d') as SignOptions['expiresIn'];
+    this.maxSessionAgeMs = parseInt(process.env.JWT_SESSION_MAX_AGE_MS || String(12 * 60 * 60 * 1000), 10);
   }
 
   signToken(user: TokenUser): string {
@@ -59,7 +61,7 @@ export class AuthService {
     );
   }
 
-  signRefreshToken(user: TokenUser): string {
+  signRefreshToken(user: TokenUser, sessionIat: number): string {
     return sign(
       {
         sub: String(user.id),
@@ -68,6 +70,7 @@ export class AuthService {
         role: user.role ?? 'usuario',
         nombre: user.nombre ?? null,
         tokenType: 'refresh',
+        sessionIat,
       },
       this.refreshSecret,
       { expiresIn: this.refreshExpiresIn },
@@ -76,7 +79,8 @@ export class AuthService {
 
   async issueSessionTokens(user: TokenUser) {
     const token = this.signToken(user);
-    const refreshToken = this.signRefreshToken(user);
+    const sessionIat = Math.floor(Date.now() / 1000);
+    const refreshToken = this.signRefreshToken(user, sessionIat);
     const refreshPayload = this.verifyRefreshToken(refreshToken);
     await this.persistRefreshToken(String(user.id), refreshToken, refreshPayload.exp);
 
@@ -85,6 +89,13 @@ export class AuthService {
 
   async rotateRefreshToken(refreshToken: string, user: TokenUser) {
     const payload = this.verifyRefreshToken(refreshToken);
+    const sessionIat = payload.sessionIat ?? payload.iat ?? Math.floor(Date.now() / 1000);
+    const ageMs = Date.now() - sessionIat * 1000;
+    if (this.maxSessionAgeMs > 0 && ageMs > this.maxSessionAgeMs) {
+      // El cliente tendrá que re-autenticarse.
+      await this.revokeRefreshToken(refreshToken);
+      throw new UnauthorizedException('Sesión caducada');
+    }
     const tokenHash = this.hashToken(refreshToken);
 
     const { rows } = await this.db.query<{
@@ -116,7 +127,7 @@ export class AuthService {
       );
 
       const nextToken = this.signToken(user);
-      const nextRefreshToken = this.signRefreshToken(user);
+      const nextRefreshToken = this.signRefreshToken(user, sessionIat);
       const nextRefreshPayload = this.verifyRefreshToken(nextRefreshToken);
 
       await client.query(
@@ -204,6 +215,17 @@ export class AuthService {
         this.hashToken(refreshToken),
         this.expiryFromEpoch(exp),
       ],
+    );
+  }
+
+  async revokeRefreshToken(refreshToken: string) {
+    const payload = this.verifyRefreshToken(refreshToken);
+    const tokenHash = this.hashToken(refreshToken);
+    await this.db.query(
+      `UPDATE refresh_tokens
+       SET revoked_at = CURRENT_TIMESTAMP
+       WHERE usuario_id = $1 AND token_hash = $2 AND revoked_at IS NULL`,
+      [payload.sub, tokenHash],
     );
   }
 }

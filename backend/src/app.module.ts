@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { DatabaseModule } from './database/database.module';
@@ -20,6 +20,7 @@ import { AlergenosModule } from './alergenos/alergenos.module';
 import { EscandallosModule } from './escandallos/escandallos.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { LotesModule } from './lotes/lotes.module';
+import { SmartThrottlerGuard } from './common/smart-throttler.guard';
 
 @Module({
   imports: [
@@ -55,7 +56,7 @@ import { LotesModule } from './lotes/lotes.module';
     },
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: SmartThrottlerGuard,
     },
   ],
 })

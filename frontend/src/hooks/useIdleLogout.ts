@@ -21,6 +21,11 @@ export function useIdleLogout(options: Options = {}) {
       const last = getLastActivityAt();
       const lastAt = last ?? safeNow();
       if (safeNow() - lastAt >= idleTimeoutMs) {
+        fetch(`${(import.meta.env.VITE_API_URL as string) || "/api"}/login/logout`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        }).catch(() => {});
         clearSession();
         if (window.location.pathname !== "/login") {
           window.location.replace("/login");

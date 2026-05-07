@@ -6,6 +6,7 @@ export type AuthTokenPayload = {
   role?: string | null;
   nombre?: string | null;
   tokenType?: 'access' | 'refresh';
+  sessionIat?: number;
   iat?: number;
   exp?: number;
 };

@@ -68,7 +68,7 @@ describe('AuthService', () => {
       username: 'admin',
       role: 'admin',
       nombre: 'Administrador',
-    });
+    }, Math.floor(Date.now() / 1000));
 
     const payload = service.verifyRefreshToken(refreshToken);
 

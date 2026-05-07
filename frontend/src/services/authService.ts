@@ -7,8 +7,6 @@ export type UsuarioActivo = Record<string, unknown>;
 type LoginResponse = {
   success: boolean;
   data: {
-    token: string;
-    refreshToken?: string;
     user: UsuarioActivo;
   };
 };
@@ -29,8 +27,8 @@ export async function login(username: string, password: string): Promise<Usuario
       headers: { "X-Requested-With": "XMLHttpRequest" },
       body: JSON.stringify({ username, password }),
     });
-    if (response?.success && response?.data?.token && response?.data?.user) {
-      saveSession(response.data.token, response.data.user, response.data.refreshToken);
+    if (response?.success && response?.data?.user) {
+      saveSession(response.data.user);
       return response.data.user;
     }
     throw new Error("No se pudo iniciar sesión");
@@ -73,5 +71,13 @@ export async function resendVerification(email: string) {
 }
 
 export function logout() {
+  // Best-effort: revoca refresh cookie en el backend.
+  fetch(`${(import.meta.env.VITE_API_URL as string) || "/api"}/login/logout`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+  }).catch(() => {
+    // ignoramos errores de red
+  });
   clearSession();
 }

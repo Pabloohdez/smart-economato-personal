@@ -4,6 +4,9 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/response.interceptor';
 import { AllExceptionsFilter } from './common/http-exception.filter';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import type { Request, Response, NextFunction } from 'express';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -23,6 +26,33 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.use(cookieParser());
+  app.use(
+    helmet({
+      // CSP estricta: ajusta `connectSrc` si consumes otros orígenes.
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          // Vite/SPA suele requerir inline scripts en dev; mantenemos un baseline seguro.
+          // Si te rompe algo en dev, se puede condicionar a NODE_ENV.
+          "script-src": ["'self'"],
+          "object-src": ["'none'"],
+          "base-uri": ["'self'"],
+          "frame-ancestors": ["'none'"],
+          "img-src": ["'self'", "data:", "blob:"],
+          "connect-src": ["'self'", ...allowedOrigins],
+        },
+      },
+      referrerPolicy: { policy: 'no-referrer' },
+      frameguard: { action: 'deny' },
+      hsts: process.env.NODE_ENV === 'production' ? { maxAge: 15552000, includeSubDomains: true } : false,
+      crossOriginResourcePolicy: { policy: 'same-site' },
+    }),
+  );
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    next();
+  });
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,

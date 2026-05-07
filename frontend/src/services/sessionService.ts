@@ -1,6 +1,4 @@
 const USER_KEY = "usuarioActivo";
-const TOKEN_KEY = "authToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
 const LAST_ACTIVITY_KEY = "lastActivityAt";
 
 // 10 minutos de inactividad → cerrar sesión.
@@ -13,30 +11,22 @@ function storage() {
   return sessionStorage;
 }
 
-export function saveSession(token: string, user: SessionUser, refreshToken?: string) {
-  storage().setItem(TOKEN_KEY, token);
+export function saveSession(user: SessionUser) {
   storage().setItem(USER_KEY, JSON.stringify(user));
-  if (refreshToken) {
-    storage().setItem(REFRESH_TOKEN_KEY, refreshToken);
-  } else {
-    storage().removeItem(REFRESH_TOKEN_KEY);
-  }
   touchActivity();
 }
 
 export function clearSession() {
-  storage().removeItem(TOKEN_KEY);
   storage().removeItem(USER_KEY);
-  storage().removeItem(REFRESH_TOKEN_KEY);
   storage().removeItem(LAST_ACTIVITY_KEY);
 }
 
 export function getToken() {
-  return storage().getItem(TOKEN_KEY);
+  return null;
 }
 
 export function getRefreshToken() {
-  return storage().getItem(REFRESH_TOKEN_KEY);
+  return null;
 }
 
 export function getStoredUser(): SessionUser | null {
@@ -55,7 +45,7 @@ export function saveStoredUser(user: SessionUser) {
 }
 
 export function hasActiveSession() {
-  return Boolean(getToken() && getStoredUser());
+  return Boolean(getStoredUser());
 }
 
 export function touchActivity(now = Date.now()) {

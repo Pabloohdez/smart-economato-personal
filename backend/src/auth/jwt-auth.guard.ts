@@ -11,6 +11,10 @@ import { IS_PUBLIC_KEY } from './public.decorator';
 import { ROLES_KEY } from './roles.decorator';
 import type { AuthenticatedRequest } from './auth.types';
 
+type CookieRequest = AuthenticatedRequest & {
+  cookies?: Record<string, string | undefined>;
+};
+
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -25,8 +29,9 @@ export class JwtAuthGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const token = this.authService.extractBearerToken(request.headers.authorization);
+    const request = context.switchToHttp().getRequest<CookieRequest>();
+    const bearer = this.authService.extractBearerToken(request.headers.authorization);
+    const token = bearer ?? request.cookies?.accessToken ?? null;
 
     if (!token) {
       throw new UnauthorizedException('Falta token de autenticación');
