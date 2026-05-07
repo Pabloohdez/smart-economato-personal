@@ -95,7 +95,7 @@ const PedidoItemCard = memo(function PedidoItemCard({
   handlers: QtyHandlers;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_10px_26px_rgba(15,23,42,0.06)]">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-[14px] font-extrabold text-slate-900">{it.producto_nombre}</div>
@@ -133,33 +133,39 @@ const PedidoItemCard = memo(function PedidoItemCard({
 
       <div className="mt-3">
         {!completado ? (
-          <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2">
-            <button
-              type="button"
-              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
+          <div className="flex items-center justify-between gap-3">
+            <div className="inline-flex items-center rounded-[14px] border border-slate-200 bg-slate-50 p-1.5 shadow-sm">
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
               aria-label={`Reducir cantidad de ${it.producto_nombre ?? "producto"}`}
               onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) - step, maxRecibir, step)}
-            >
-              -
-            </button>
-            <input
-              type="number"
-              min={0}
-              max={maxRecibir}
-              step={step}
-              value={qtyVerif}
-              onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
-              className="min-h-11 w-full rounded-[12px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-3 py-2 text-center font-semibold [appearance:textfield]"
-              inputMode="numeric"
-            />
-            <button
-              type="button"
-              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
-              aria-label={`Aumentar cantidad de ${it.producto_nombre ?? "producto"}`}
-              onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) + step, maxRecibir, step)}
-            >
-              +
-            </button>
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={0}
+                max={maxRecibir}
+                step={step}
+                value={qtyVerif}
+                onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
+                className="mx-1 h-10 w-[96px] rounded-[12px] border border-slate-200 bg-white px-2 text-center text-[15px] font-extrabold text-slate-900 [appearance:textfield] shadow-sm"
+                inputMode="numeric"
+              />
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
+                aria-label={`Aumentar cantidad de ${it.producto_nombre ?? "producto"}`}
+                onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) + step, maxRecibir, step)}
+              >
+                +
+              </button>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Máx.</div>
+              <div className="text-[13px] font-extrabold text-slate-800">{maxRecibir}</div>
+            </div>
           </div>
         ) : (
           <div className="text-[13px] font-semibold text-slate-500">Pedido completado</div>
@@ -196,36 +202,45 @@ const PedidoItemRow = memo(function PedidoItemRow({
 }) {
   return (
     <TableRow key={String(it.id)} className="bo-table-row">
-      <TableCell className="max-w-[360px] truncate font-semibold text-slate-900">{it.producto_nombre}</TableCell>
-      <TableCell className="whitespace-nowrap text-slate-600">{unidad}</TableCell>
-      <TableCell className="text-slate-700">{String(it.cantidad ?? 0)}</TableCell>
-      <TableCell className="text-slate-700">{String(it.cantidad_recibida ?? 0)}</TableCell>
+      <TableCell className="px-4 py-3 max-w-[360px] truncate font-semibold text-slate-900">{it.producto_nombre}</TableCell>
+      <TableCell className="px-4 py-3 whitespace-nowrap text-slate-600">{unidad}</TableCell>
+      <TableCell className="px-4 py-3 text-slate-700">{String(it.cantidad ?? 0)}</TableCell>
+      <TableCell className="px-4 py-3 text-slate-700">{String(it.cantidad_recibida ?? 0)}</TableCell>
       <TableCell className="text-center">
         {!completado ? (
-          <div className="inline-flex w-full flex-wrap items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2.5">
+            <div className="inline-flex items-center rounded-[14px] border border-slate-200 bg-slate-50 p-1.5 shadow-sm">
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
+                aria-label={`Reducir cantidad de ${it.producto_nombre ?? "producto"}`}
+                onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) - step, maxRecibir, step)}
+              >
+                −
+              </button>
+              <input
+                type="number"
+                min={0}
+                max={maxRecibir}
+                step={step}
+                value={qtyVerif}
+                onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
+                className="mx-1 h-10 w-[104px] rounded-[12px] border border-slate-200 bg-white px-2 text-center text-[15px] font-extrabold text-slate-900 [appearance:textfield] shadow-sm"
+                inputMode="numeric"
+              />
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] border border-slate-200 bg-white text-[20px] font-extrabold leading-none text-slate-800 shadow-sm active:scale-[0.98]"
+                aria-label={`Aumentar cantidad de ${it.producto_nombre ?? "producto"}`}
+                onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) + step, maxRecibir, step)}
+              >
+                +
+              </button>
+            </div>
+
             <button
               type="button"
-              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[22px] font-bold leading-none"
-              aria-label={`Reducir cantidad de ${it.producto_nombre ?? "producto"}`}
-              onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) - step, maxRecibir, step)}
-            >
-              -
-            </button>
-
-            <input
-              type="number"
-              min={0}
-              max={maxRecibir}
-              step={step}
-              value={qtyVerif}
-              onChange={(e) => handlers.onSetQty(String(it.id), Number(e.target.value || 0), maxRecibir, step)}
-              className="w-[96px] min-h-11 rounded-[12px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-2.5 py-2 text-center font-semibold [appearance:textfield]"
-              inputMode="numeric"
-            />
-
-            <button
-              type="button"
-              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
               aria-label={`Usar lectura de báscula para ${it.producto_nombre ?? "producto"}`}
               title="Usar lectura de báscula"
               onClick={() => handlers.onUseScale(String(it.id), unidad, maxRecibir, step)}
@@ -236,21 +251,12 @@ const PedidoItemRow = memo(function PedidoItemRow({
 
             <button
               type="button"
-              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[var(--color-text-strong)]"
+              className="bo-table-action-btn h-10 w-10 min-h-10 min-w-10 rounded-[12px] text-[var(--color-text-strong)]"
               aria-label={`Gestionar lotes de ${it.producto_nombre ?? "producto"}`}
               title="Lotes (caducidad)"
               onClick={() => handlers.onOpenLotes(String(it.id), unidad, maxRecibir)}
             >
               <CalendarDays className="h-4 w-4" />
-            </button>
-
-            <button
-              type="button"
-              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[12px] text-[22px] font-bold leading-none"
-              aria-label={`Aumentar cantidad de ${it.producto_nombre ?? "producto"}`}
-              onClick={() => handlers.onSetQty(String(it.id), Number(qtyVerif || 0) + step, maxRecibir, step)}
-            >
-              +
             </button>
           </div>
         ) : (
@@ -1026,7 +1032,7 @@ export default function Recepcion() {
       {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
         <motion.div
-          className="fixed inset-0 z-[1000] overflow-y-auto bg-[rgba(11,18,32,0.42)] backdrop-blur-[4px]"
+          className="fixed inset-0 z-[1000] overflow-y-auto overflow-x-hidden bg-[rgba(11,18,32,0.42)] backdrop-blur-[4px]"
           onClick={cerrarDrawerPedidos}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -1034,27 +1040,34 @@ export default function Recepcion() {
         >
         <div className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-6">
           <motion.aside
-            className="w-full max-w-[1000px] max-h-[calc(100dvh-3rem)] bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.22)] rounded-[18px] overflow-hidden flex flex-col"
+            className="w-full max-w-[1040px] max-h-[calc(100dvh-3rem)] bg-white border border-slate-200 shadow-[0_30px_70px_rgba(0,0,0,0.25)] rounded-[22px] overflow-hidden overflow-x-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.98, opacity: 0, y: 12 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-5 max-[768px]:px-4">
-              <h3 className="m-0 flex items-center gap-2">
-                <Import className="h-5 w-5 text-[var(--color-brand-500)]" /> Importar Pedido Pendiente
-              </h3>
+            <div className="px-6 py-5 max-[768px]:px-4 border-b border-slate-200 bg-[linear-gradient(135deg,rgba(179,49,49,0.10)_0%,rgba(179,49,49,0.04)_55%,rgba(15,23,42,0.02)_100%)]">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="m-0 flex items-center gap-2 text-[16px] font-extrabold tracking-[-0.02em] text-slate-900">
+                    <Import className="h-5 w-5 text-[var(--color-brand-500)]" /> Importar pedido pendiente
+                  </h3>
+                  <p className="m-0 mt-1 text-[13px] font-semibold text-slate-500">
+                    Verifica lo recibido y añádelo a la recepción actual.
+                  </p>
+                </div>
               <button
                 type="button"
-                className="w-11 h-11 min-w-11 rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] inline-flex items-center justify-center cursor-pointer active:scale-[0.98]"
+                className="w-11 h-11 min-w-11 rounded-[14px] border border-slate-200 bg-white text-slate-600 inline-flex items-center justify-center cursor-pointer shadow-sm hover:bg-slate-50 active:scale-[0.98]"
                 aria-label="Cerrar importacion de pedidos"
                 onClick={cerrarDrawerPedidos}
               >
                 <i className="fa-solid fa-xmark" />
               </button>
+              </div>
             </div>
 
-            <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1 px-6 pb-6 max-[768px]:px-4 max-[768px]:pb-4 [scrollbar-gutter:stable]">
+            <div className="flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden pr-1 px-6 pb-6 max-[768px]:px-4 max-[768px]:pb-4 [scrollbar-gutter:stable] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcfe_100%)]">
 
             {pedidosPendientesQuery.isLoading || pedidosPendientesQuery.isFetching ? (
               <div className="flex-1 flex items-center justify-center">
@@ -1078,7 +1091,7 @@ export default function Recepcion() {
                 <p>No hay pedidos pendientes o incompletos.</p>
               </div>
             ) : (
-              <div className="mt-5 flex-1 flex flex-col gap-[18px]">
+              <div className="mt-5 flex-1 flex flex-col gap-[16px]">
                 {pedidosPendientes.map((ped) => {
                   const items = Array.isArray(ped.items) ? ped.items : [];
                   const completado = ped.estado.toUpperCase() === "COMPLETADO";
@@ -1089,25 +1102,32 @@ export default function Recepcion() {
                   };
 
                   return (
-                    <div key={String(ped.id)} className="border border-[var(--color-border-default)] rounded-[14px] p-4 bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] flex flex-col justify-between">
-                      <div className="flex items-start justify-between gap-3 pb-3 mb-3 border-b border-[var(--color-border-default)] max-[1024px]:flex-col max-[1024px]:items-start">
-                        <div>
-                          <strong>Pedido #{ped.id}</strong> — Proveedor: {ped.proveedor_nombre}
+                    <div key={String(ped.id)} className="rounded-[18px] border border-slate-200 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.06)] overflow-hidden">
+                      <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-slate-200 bg-slate-50/70 max-[1024px]:flex-col max-[1024px]:items-start">
+                        <div className="min-w-0">
+                          <div className="text-[12px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                            Pedido
+                          </div>
+                          <div className="mt-0.5 text-[14px] font-extrabold text-slate-900">
+                            #{ped.id} <span className="font-semibold text-slate-500">·</span>{" "}
+                            <span className="text-slate-700">Proveedor:</span>{" "}
+                            <span className="text-slate-900">{ped.proveedor_nombre}</span>
+                          </div>
                         </div>
                         <span
                           className={[
-                            "inline-flex items-center justify-center min-h-7 px-2.5 py-1 rounded-full text-[12px] font-bold uppercase whitespace-nowrap",
+                            "inline-flex items-center justify-center min-h-7 px-3 py-1 rounded-full text-[11px] font-extrabold uppercase whitespace-nowrap border shadow-sm",
                             ped.estado.toLowerCase() === "pendiente"
-                              ? "bg-[#fff5f5] text-[#b33131]"
+                              ? "bg-[#fff5f5] text-[#b33131] border-[#ffd1d1]"
                               : ped.estado.toLowerCase() === "incompleto"
-                                ? "bg-[#fffaf0] text-[#c05621]"
-                                : "bg-[var(--color-bg-soft)] text-[var(--color-text-muted)]",
+                                ? "bg-[#fffaf0] text-[#c05621] border-[#fed7aa]"
+                                : "bg-slate-100 text-slate-600 border-slate-200",
                           ].join(" ")}
                         >
                           {ped.estado}
                         </span>
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 px-4 py-4">
                         {items.length === 0 ? (
                           <p>Sin items</p>
                         ) : (
@@ -1145,15 +1165,15 @@ export default function Recepcion() {
 
                             {/* Desktop grande: tabla */}
                             <div className="max-[1366px]:hidden">
-                              <div className="w-full overflow-x-auto">
-                                <Table className="mt-2.5 min-w-[720px] overflow-hidden rounded-[20px] border border-slate-100 bg-white text-[12px]">
+                              <div className="w-full max-w-full overflow-x-auto rounded-[18px] border border-slate-200 bg-white">
+                                <Table className="w-full min-w-[760px] text-[12px]">
                                   <TableHeader>
                                     <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80 sticky top-0 z-10">
-                                      <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Producto</TableHead>
-                                      <TableHead className="whitespace-nowrap min-w-[90px]">Unidad</TableHead>
-                                      <TableHead className="whitespace-nowrap min-w-[90px]">Pedida</TableHead>
-                                      <TableHead className="whitespace-nowrap min-w-[140px]">Recibida (Antes)</TableHead>
-                                      <TableHead className="rounded-r-2xl whitespace-nowrap text-center min-w-[260px]">A Recibir Ahora</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[260px] text-slate-600">Producto</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[80px] text-slate-600">Unidad</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[80px] text-slate-600">Pedida</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap min-w-[140px] text-slate-600">Recibida (antes)</TableHead>
+                                      <TableHead className="px-4 py-3 whitespace-nowrap text-center min-w-[360px] text-slate-600">A recibir ahora</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -1190,7 +1210,7 @@ export default function Recepcion() {
                       </div>
 
                       {!completado && (
-                        <div className="text-right mt-[15px]">
+                        <div className="px-4 pb-4 text-right">
                           <button
                             className="min-h-11 px-4 py-2.5 border-0 rounded-[10px] bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white font-semibold inline-flex items-center gap-2 cursor-pointer shadow-[0_4px_12px_rgba(179,49,49,0.24)] transition-[transform,filter,box-shadow] duration-150 hover:-translate-y-px hover:brightness-105 hover:shadow-[0_6px_16px_rgba(179,49,49,0.3)] active:scale-[0.98] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
                             type="button"
@@ -1210,8 +1230,8 @@ export default function Recepcion() {
             )}
             </div>
 
-            <div className="border-t border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-4 max-[768px]:px-4">
-              <button className="w-full min-h-12 px-3 py-3 rounded-lg font-semibold cursor-pointer border-0 bg-[var(--color-border-default)] text-[var(--color-text-muted)]" onClick={cerrarDrawerPedidos}>
+            <div className="border-t border-slate-200 bg-white px-6 py-4 max-[768px]:px-4">
+              <button className="w-full min-h-12 px-3 py-3 rounded-xl font-extrabold cursor-pointer border border-slate-200 bg-slate-50 text-slate-700 shadow-sm hover:bg-slate-100" onClick={cerrarDrawerPedidos}>
                 Cerrar
               </button>
             </div>
