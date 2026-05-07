@@ -57,6 +57,57 @@
     --motion-base: 260ms ease;
   }
 
+  html.dark {
+    --color-bg-canvas: #0b1220;
+    --color-bg-surface: #0f172a;
+    --color-bg-soft: #111c33;
+    --color-bg-elevated: #0f172a;
+
+    --color-text-strong: #e2e8f0;
+    --color-text-default: #cbd5e1;
+    --color-text-muted: #94a3b8;
+
+    --color-border-default: rgba(148, 163, 184, 0.22);
+    --color-border-strong: rgba(148, 163, 184, 0.32);
+
+    --color-control-border: rgba(226, 232, 240, 0.18);
+    --color-control-border-strong: rgba(226, 232, 240, 0.32);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 22px rgba(0, 0, 0, 0.22);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.35), 0 18px 45px rgba(0, 0, 0, 0.26);
+    --shadow-lg: 0 16px 45px rgba(0, 0, 0, 0.38), 0 24px 56px rgba(0, 0, 0, 0.28);
+    --shadow-button: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 22px rgba(0, 0, 0, 0.22);
+  }
+
+  /* ===== Dark mode "bridge" =====
+     Gran parte de la UI usa clases Tailwind hardcodeadas (bg-white, text-slate-900, etc).
+     Estos overrides hacen que el modo oscuro se vea coherente sin refactor masivo. */
+  html.dark body {
+    background: var(--color-bg-canvas) !important;
+    color: var(--color-text-strong) !important;
+  }
+
+  html.dark .bg-white { background-color: var(--color-bg-surface) !important; }
+  html.dark .bg-slate-50,
+  html.dark .bg-slate-50\/70,
+  html.dark .bg-slate-50\/80 { background-color: var(--color-bg-soft) !important; }
+  html.dark .bg-slate-100 { background-color: rgba(148, 163, 184, 0.10) !important; }
+
+  html.dark .text-slate-900,
+  html.dark .text-slate-800 { color: var(--color-text-strong) !important; }
+  html.dark .text-slate-700,
+  html.dark .text-slate-600 { color: var(--color-text-default) !important; }
+  html.dark .text-slate-500,
+  html.dark .text-slate-400 { color: var(--color-text-muted) !important; }
+
+  html.dark .border-slate-100,
+  html.dark .border-slate-200,
+  html.dark .border-slate-300 { border-color: var(--color-border-default) !important; }
+
+  html.dark .shadow-sm { box-shadow: var(--shadow-sm) !important; }
+  html.dark .shadow-lg,
+  html.dark .shadow-2xl { box-shadow: var(--shadow-lg) !important; }
+
   @media (prefers-reduced-motion: reduce) {
     :root {
       --motion-fast: 0ms linear;

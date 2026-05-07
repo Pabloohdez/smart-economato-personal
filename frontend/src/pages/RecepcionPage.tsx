@@ -1303,14 +1303,15 @@ export default function Recepcion() {
                 <strong>{Number(verifQty[lotesDetalleId] ?? 0).toFixed(3)} {lotesUnidad}</strong>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+              {/* Layout ultra-robusto: apilado para evitar solapes en todos los navegadores */}
+              <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-2">
                   <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Caducidad</label>
                   <input
                     type="date"
                     value={loteFecha}
                     onChange={(e) => setLoteFecha(e.target.value)}
-                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                    className="block w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -1320,7 +1321,7 @@ export default function Recepcion() {
                     value={loteCantidad}
                     onChange={(e) => setLoteCantidad(e.target.value)}
                     step={lotesUnidad === "ud" ? "1" : "0.001"}
-                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                    className="block w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
                   />
                 </div>
               </div>

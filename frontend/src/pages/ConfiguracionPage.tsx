@@ -8,6 +8,7 @@ import { getAlergenosCatalogo, getMisAlergias, saveMisAlergias } from "../servic
 import { queryKeys } from "../lib/queryClient";
 import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import { useTheme } from "../contexts/ThemeContext";
 
 type PreferenciasNotificaciones = {
   alertasProductos: boolean;
@@ -155,6 +156,7 @@ const ALERGENOS_DISPONIBLES = [
 
 export default function ConfiguracionPage() {
   const { user: authUser, updateUser } = useAuth();
+  const { resolvedTheme, toggleTheme } = useTheme();
   const queryClient = useQueryClient();
   const [tabActiva, setTabActiva] = useState<TabKey>("perfil");
   const [usuarioActual, setUsuarioActual] = useState<UsuarioActivo | null>(
@@ -372,15 +374,37 @@ export default function ConfiguracionPage() {
   return (
     <StaggerPage>
       <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]" data-tour="configuracion-header">
-        <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
-          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
-            <i className="fa-solid fa-gear" />
-          </span>
-          Configuración del Perfil
-        </h1>
-        <p className="m-0 text-[14px] text-[var(--color-text-muted)]">
-          Gestiona tu información personal y configuración de alergias
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+                <i className="fa-solid fa-gear" />
+              </span>
+              Configuración
+            </h1>
+            <p className="m-0 text-[14px] text-[var(--color-text-muted)]">
+              Gestiona tu perfil, alergias, notificaciones y apariencia
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="inline-flex min-h-12 items-center gap-3 rounded-2xl border-2 border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-4 py-3 text-[13px] font-extrabold text-[var(--color-text-strong)] shadow-sm transition hover:bg-[var(--color-bg-soft)]"
+            aria-label="Cambiar modo oscuro"
+            title="Cambiar modo oscuro"
+          >
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-bg-soft)]">
+              <i className={`fa-solid ${resolvedTheme === "dark" ? "fa-moon" : "fa-sun"}`} />
+            </span>
+            <span className="flex flex-col items-start leading-tight">
+              <span>Apariencia</span>
+              <span className="text-[11px] font-semibold text-[var(--color-text-muted)]">
+                {resolvedTheme === "dark" ? "Modo oscuro" : "Modo claro"}
+              </span>
+            </span>
+          </button>
+        </div>
       </StaggerItem>
 
       <StaggerItem

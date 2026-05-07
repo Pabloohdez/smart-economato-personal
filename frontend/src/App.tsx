@@ -23,6 +23,7 @@ import RouteErrorBoundary from "./components/app/RouteErrorBoundary";
 import ConfirmDialogHost from "./components/ui/ConfirmDialogHost";
 import { Toaster } from "./components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { queryClient } from "./lib/queryClient";
 import ErrorPage from "./pages/ErrorPage";
 import { useIdleLogout } from "./hooks/useIdleLogout";
@@ -85,11 +86,13 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AppRealtimeSync />
       <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-          <ConfirmDialogHost />
-          <Toaster />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppRoutes />
+            <ConfirmDialogHost />
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
