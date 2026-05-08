@@ -1,7 +1,6 @@
 import { QueryClient, type QueryKey } from "@tanstack/react-query";
 import { queryKeys } from "./queryClient";
 import { API_URL } from "../services/apiClient";
-import { getToken } from "../services/sessionService";
 
 const CHANNEL_NAME = "smart-economato-sync";
 const REFRESH_INTERVAL_MS = 60_000;
@@ -58,12 +57,12 @@ export function broadcastQueryInvalidation(queryKey?: QueryKey) {
   channel.close();
 }
 
-export function createRealtimeStreamUrl(token: string) {
+export function createRealtimeStreamUrl() {
   const baseUrl = API_URL.startsWith("http")
     ? API_URL
     : `${window.location.origin}${API_URL}`;
 
-  return `${baseUrl}/realtime/stream?token=${encodeURIComponent(token)}`;
+  return `${baseUrl}/realtime/stream`;
 }
 
 async function invalidateKeysFromEvent(queryClient: QueryClient, keys: string[]) {
@@ -85,12 +84,11 @@ export function setupRealtimeSync(queryClient: QueryClient) {
   let reconnectTimer: number | null = null;
 
   const connectToSse = () => {
-    const token = getToken();
-    if (!token || typeof EventSource === "undefined" || eventSource) {
+    if (typeof EventSource === "undefined" || eventSource) {
       return;
     }
 
-    eventSource = new EventSource(createRealtimeStreamUrl(token));
+    eventSource = new EventSource(createRealtimeStreamUrl());
     eventSource.addEventListener("invalidate", (event) => {
       try {
         const payload = JSON.parse((event as MessageEvent<string>).data) as { keys?: string[] };

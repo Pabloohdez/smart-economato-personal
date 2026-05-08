@@ -24,7 +24,7 @@ describe("authService", () => {
     clearSessionMock.mockReset();
   });
 
-  it("guarda la sesión cuando el login devuelve token y usuario", async () => {
+  it("guarda la sesión cuando el login devuelve usuario", async () => {
     const user = { id: 1, nombre: "Admin" };
     apiFetchMock.mockResolvedValue({
       success: true,
@@ -34,7 +34,7 @@ describe("authService", () => {
     const result = await login("admin", "secreto");
 
     expect(result).toEqual(user);
-    expect(saveSessionMock).toHaveBeenCalledWith("jwt-token", user, "refresh-token");
+    expect(saveSessionMock).toHaveBeenCalledWith(user);
     expect(clearSessionMock).not.toHaveBeenCalled();
   });
 

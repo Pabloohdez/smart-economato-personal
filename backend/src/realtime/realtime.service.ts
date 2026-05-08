@@ -1,7 +1,6 @@
-import { Injectable, MessageEvent, UnauthorizedException } from '@nestjs/common';
+import { Injectable, MessageEvent } from '@nestjs/common';
 import { interval, merge, Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AuthService } from '../auth/auth.service';
 
 type RealtimePayload = {
   keys: string[];
@@ -15,16 +14,9 @@ const HEARTBEAT_MS = 25_000;
 export class RealtimeService {
   private readonly events$ = new Subject<RealtimePayload>();
 
-  constructor(private readonly authService: AuthService) {}
+  constructor() {}
 
-  connect(token?: string): Observable<MessageEvent> {
-    const normalizedToken = token?.trim();
-    if (!normalizedToken) {
-      throw new UnauthorizedException('Token requerido para tiempo real');
-    }
-
-    this.authService.verifyToken(normalizedToken);
-
+  connect(): Observable<MessageEvent> {
     return merge(
       this.events$.pipe(
         map((payload) => ({

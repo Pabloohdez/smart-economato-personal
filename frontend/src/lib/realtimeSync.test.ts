@@ -35,13 +35,12 @@ class MockEventSource {
 describe("realtimeSync", () => {
   beforeEach(() => {
     localStorage.clear();
-    localStorage.setItem("authToken", "jwt-demo");
     vi.stubGlobal("BroadcastChannel", MockBroadcastChannel);
     vi.stubGlobal("EventSource", MockEventSource);
   });
 
-  it("construye la URL del stream SSE con el token actual", () => {
-    expect(createRealtimeStreamUrl("a b")).toContain("/api/realtime/stream?token=a%20b");
+  it("construye la URL del stream SSE", () => {
+    expect(createRealtimeStreamUrl()).toContain("/api/realtime/stream");
   });
 
   it("invalida las queries mapeadas cuando llega un evento del servidor", async () => {
