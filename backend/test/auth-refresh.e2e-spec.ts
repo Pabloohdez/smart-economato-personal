@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import cookieParser from 'cookie-parser';
 import { LoginController } from '../src/login/login.controller';
 import { LoginService } from '../src/login/login.service';
 import { AuthService } from '../src/auth/auth.service';
@@ -165,6 +166,8 @@ describe('Refresh token cycle (e2e)', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    // Necesario para leer cookies en /login/refresh cuando usemos cookie-based auth.
+    app.use(cookieParser());
     app.useGlobalInterceptors(new ResponseInterceptor());
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
     await app.init();
@@ -188,27 +191,56 @@ describe('Refresh token cycle (e2e)', () => {
       .expect(201);
 
     expect(loginResponse.body.success).toBe(true);
-    expect(loginResponse.body.data.token).toBeTruthy();
-    expect(loginResponse.body.data.refreshToken).toBeTruthy();
     expect(loginResponse.body.data.user.alergias).toEqual(['Gluten']);
 
-    const firstAccessToken = loginResponse.body.data.token as string;
-    const firstRefreshToken = loginResponse.body.data.refreshToken as string;
+    const loginSetCookie = loginResponse.headers['set-cookie'] as unknown;
+    const loginCookies = Array.isArray(loginSetCookie)
+      ? (loginSetCookie as string[])
+      : typeof loginSetCookie === 'string'
+        ? [loginSetCookie]
+        : [];
+    expect(loginCookies.length > 0).toBe(true);
+
+    const firstAccessCookie = (loginCookies ?? []).find((c) => c.startsWith('accessToken='));
+    const firstRefreshCookie = (loginCookies ?? []).find((c) => c.startsWith('refreshToken='));
+    expect(firstAccessCookie).toBeTruthy();
+    expect(firstRefreshCookie).toBeTruthy();
+
+    const firstAccessToken = String(firstAccessCookie).split(';')[0].split('=')[1];
+    const firstRefreshToken = String(firstRefreshCookie).split(';')[0].split('=')[1];
+    expect(firstAccessToken).toBeTruthy();
+    expect(firstRefreshToken).toBeTruthy();
 
     const refreshResponse = await request(app.getHttpServer())
       .post('/login/refresh')
-      .send({ refreshToken: firstRefreshToken })
+      // preferimos cookie-based refresh para simular navegador real
+      .set('Cookie', [`refreshToken=${firstRefreshToken}`])
       .expect(201);
 
     expect(refreshResponse.body.success).toBe(true);
-    expect(refreshResponse.body.data.token).toBeTruthy();
-    expect(refreshResponse.body.data.refreshToken).toBeTruthy();
-    expect(refreshResponse.body.data.token).not.toBe(firstAccessToken);
-    expect(refreshResponse.body.data.refreshToken).not.toBe(firstRefreshToken);
+    expect(refreshResponse.body.data.user.alergias).toEqual(['Gluten']);
+
+    const refreshSetCookie = refreshResponse.headers['set-cookie'] as unknown;
+    const refreshCookies = Array.isArray(refreshSetCookie)
+      ? (refreshSetCookie as string[])
+      : typeof refreshSetCookie === 'string'
+        ? [refreshSetCookie]
+        : [];
+    const nextAccessCookie = (refreshCookies ?? []).find((c) => c.startsWith('accessToken='));
+    const nextRefreshCookie = (refreshCookies ?? []).find((c) => c.startsWith('refreshToken='));
+    expect(nextAccessCookie).toBeTruthy();
+    expect(nextRefreshCookie).toBeTruthy();
+
+    const nextAccessToken = String(nextAccessCookie).split(';')[0].split('=')[1];
+    const nextRefreshToken = String(nextRefreshCookie).split(';')[0].split('=')[1];
+    expect(nextAccessToken).toBeTruthy();
+    expect(nextRefreshToken).toBeTruthy();
+    expect(nextAccessToken).not.toBe(firstAccessToken);
+    expect(nextRefreshToken).not.toBe(firstRefreshToken);
 
     await request(app.getHttpServer())
       .post('/login/refresh')
-      .send({ refreshToken: firstRefreshToken })
+      .set('Cookie', [`refreshToken=${firstRefreshToken}`])
       .expect(401);
   });
 });
